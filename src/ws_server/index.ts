@@ -1,6 +1,7 @@
 import { WebSocketServer } from 'ws';
 import WebSocket from 'ws';
 import { ServerActionHandlers } from './serverActionHandlers';
+import { WebSoketHandler } from './webSoketHandler';
 
 const WS_HOSTNAME = 'localhost';
 const WS_HTTP_PORT = 3000;
@@ -8,6 +9,13 @@ const WS_HTTP_PORT = 3000;
 //  host: WS_HOSTNAME,
 //  port: WS_HTTP_PORT,
 // });
+
+interface WebSocketWithUserIndex extends WebSocket  {
+    index?: string;
+}
+// interface WebSocketWithId extends WebSocket {
+    
+//   }
 
 
 export class WSServer {
@@ -17,7 +25,8 @@ export class WSServer {
         port: WS_HTTP_PORT,
        });;
 
-    serverActionHandlers = new ServerActionHandlers();   
+    serverActionHandlers = new ServerActionHandlers();  
+    wsHandler = new WebSoketHandler() 
 
     runServer = () => {
         // this.wss = new WebSocketServer({
@@ -34,7 +43,7 @@ export class WSServer {
 
         ws.on('message', (message: string) => {
             const action = JSON.parse(message);
-            console.log('Received command:', action);
+           // console.log('Received command:', action);
     
             switch (action.type) {
                 case 'reg':
@@ -82,7 +91,8 @@ export class WSServer {
     }
 }
 
-export const wsserver = new WSServer()
+export const wsserver = new WSServer();
+wsserver.runServer();
 
 // export function test(){
 // wss.on('connection', (ws) => {
