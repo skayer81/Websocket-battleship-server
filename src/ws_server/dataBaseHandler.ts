@@ -23,21 +23,23 @@ interface Winner {
     wins: number;            
 }
 
+interface Ship {
+
+            position: {
+                x: number,
+                y: number,
+            },
+            direction: boolean,
+            length: number,
+            type: "small"|"medium"|"large"|"huge",
+            shots: boolean[];
+}
+
 interface Game{
     
         gameId: string,
-        ships?:
-            [
-                {
-                    position: {
-                        x: number,
-                        y: number,
-                    },
-                    direction: boolean,
-                    length: number,
-                    type: "small"|"medium"|"large"|"huge",
-                }
-            ],
+        ships?: Ship[],
+
         indexPlayer:  string, /* id of the player in the current game session */    
 }
 
@@ -131,6 +133,12 @@ public isRoomFull  = async (roomId: string) => {
     return {player1: room.roomUsers[0].index, player2: room.roomUsers[1].index}
   }
 
+  public getPlayersInGame = async (gameId: string) => {
+    const game =  this.games.filter(game => game.gameId  === gameId)// as Game[]
+    return {player1: game[0].indexPlayer, player2: game[1].indexPlayer}
+  }
+
+  
   public addGame = async (player1: string, player2: string) => {
     const gameId = uuidv4();
     this.games.push({gameId, indexPlayer: player1})
@@ -140,16 +148,57 @@ public isRoomFull  = async (roomId: string) => {
 
   public addShipsToGame = async (gameId: string, indexPlayer: string, ships : any) => {
     const game = this.games.find(game => game.gameId === gameId && game.indexPlayer === indexPlayer) as Game
-    game.ships = ships
+    game.ships = ships;
+    ships.forEach((ship: Ship) => {
+        ship.shots = new Array(ship.length).fill(false);
+    })
   }
 
   public isGameReadyStart = async (gameId: string) => {
-    return this.games.filter(game => game.gameId === gameId).length === 2
+    console.log("this.games", this.games)
+    return this.games.filter(game => game.gameId === gameId && game.ships).length === 2
   }
 
   public getShipsPlayersOfGame = async (gameId: string) => {
     const game = this.games.filter(game => game.gameId === gameId)
     return {shipsPlayer1: game[0], shipsPlayer2: game[1]}
+  }
+
+  public getAttackResult = async (gameId: string, indexPlayer: string, x: number , y: number) => {
+    const game = this.games.find(game => game.gameId === gameId && game.indexPlayer !== indexPlayer);
+    const ships = game?.ships;
+    console.log(ships);
+    console.log(x, y)
+    if (!ships) throw new Error("не найдены кораблики")
+    let result = 'miss';
+
+    for (let ship of ships) {
+        if (!ship.direction){
+            if ((x >= ship.position.x) && (x < (ship.position.x + ship.length)) && y === ship.position.y) {
+                console.log("не дирекшее", ship);
+                ship.shots[x - ship.position.x] = true;
+                result = 'shot';
+                if (ship.shots.every((item)=> item)) result = 'killed'
+
+                // return true; // Попадание
+             }
+        }
+        else {
+
+            if ((y >= ship.position.y) && (y < (ship.position.y + ship.length)) && x === ship.position.x) {
+                console.log("дирекшее", ship)
+                ship.shots[y - ship.position.y] = true;
+                result = 'shot';
+                if (ship.shots.every((item)=> item)) result = 'killed'
+
+               //  return true; // Попадание
+             }
+        }
+
+    }
+    return result; 
+
+
   }
   // const roomId = `${rooms.length + 1}`;
   // const newRoom: Room = { id: roomId, players: [] };

@@ -59,7 +59,7 @@ export class WSServer {
                     this.serverActionHandlers.handleAddShips(JSON.parse(action.data), ws);
                     break;
                 case 'attack':
-                    this.serverActionHandlers.handleAttack(action.data, ws);
+                    this.serverActionHandlers.handleAttack(JSON.parse(action.data), ws);
                     break;
                 // Add more cases as needed 
                 }

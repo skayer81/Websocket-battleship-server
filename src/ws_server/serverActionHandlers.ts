@@ -10,6 +10,7 @@ export class ServerActionHandlers{
 
     dbHandler = new DBHandler();
     webSoketHandler = new WebSoketHandler()
+    test = ''
 
     handleRegistration = async (command: any, ws: WebSocket) => {
 
@@ -196,11 +197,12 @@ export class ServerActionHandlers{
 
     
     handleAddShips = async (data: any, ws: WebSocket) => {
-        // Logic to handle adding ships to the game board
-        console.log(data)
+        // console.log(data)
          await this.dbHandler.addShipsToGame(data.gameId, data.indexPlayer, data.ships)
 
-         if (! await this.dbHandler.isGameReadyStart(data.gameId)) return
+         const isGameReadyStart = await this.dbHandler.isGameReadyStart(data.gameId)
+         console.log("isGameReadyStart", isGameReadyStart)
+         if (!isGameReadyStart) return
 
          const {shipsPlayer1, shipsPlayer2} =  await this.dbHandler.getShipsPlayersOfGame(data.gameId);
 
@@ -219,22 +221,95 @@ export class ServerActionHandlers{
                 type: 'start_game',
                 data: JSON.stringify({
                     ships: shipsPlayer2.ships,
-                    currentPlayerIndex: shipsPlayer2.indexPlayer
+                    currentPlayerIndex: shipsPlayer1.indexPlayer
                 }),
                 id: 0 }));
+         this.test = shipsPlayer1.indexPlayer    
     }
     
-    handleAttack = (data: any, ws: WebSocket) => {
+    handleAttack = async (data: any, ws: WebSocket) => {
         // Logic to handle attack
-        ws.send(JSON.stringify({
+        const isUserTurn = this.test === data.indexPlayer;
+        if ( !isUserTurn) return
+        const gameId = data.gameId;
+        const indexPlayer = data.indexPlayer
+        const attackstatus =  await this.dbHandler.getAttackResult(gameId, indexPlayer, data.x , data.y)
+        const {player1 , player2} = await this.dbHandler.getPlayersInGame(gameId);
+
+        const ws1 =  this.webSoketHandler.getWSByPlayerID(player1)   
+        const ws2 = this.webSoketHandler.getWSByPlayerID(player2)
+
+
+
+        ws1.send(JSON.stringify({
             type: 'attack',
             data: JSON.stringify({
                 position: { x: data.x, y: data.y },
-                currentPlayer: data.indexPlayer,
-                status: 'miss' // Example status 
+                currentPlayer: indexPlayer,
+                status: attackstatus // Example status 
                 }),
             id: 0 }));
+
+            ws2.send(JSON.stringify({
+                type: 'attack',
+                data: JSON.stringify({
+                    position: { x: data.x, y: data.y },
+                    currentPlayer: indexPlayer,
+                    status: attackstatus // Example status 
+                    }),
+                id: 0 })); 
+
+          if (attackstatus === 'miss'){
+            this.test = (indexPlayer === player1)  ? player2 : player1; 
+          }      
+            
+           // const currentPlayer =     
+
+ 
+           
+           ws2.send(JSON.stringify({
+            type: 'turn',
+            data: JSON.stringify({
+                //position: { x: data.x, y: data.y },
+                currentPlayer:   this.test,
+               // status: attackstatus ? "shot" : 'miss' // Example status 
+                }),
+            id: 0 })); 
+            ws1.send(JSON.stringify({
+                type: 'turn',
+                data: JSON.stringify({
+                    //position: { x: data.x, y: data.y },
+                    currentPlayer:   this.test,
+                   // status: attackstatus ? "shot" : 'miss' // Example status 
+                    }),
+                id: 0 })); 
     }
+
+
+    // {
+    //     type: "turn",
+    //     data:
+    //         {
+    //             currentPlayer: <number | string>, /* id of the player in the current game session */
+    //         },
+    //     id: 0,
+    // }
+
+
+    // {
+    //     type: "attack",
+    //     data:
+    //         {
+    //             position:
+    //             {
+    //                 x: <number>,
+    //                 y: <number>,
+    //             },
+    //             currentPlayer: <number | string>, /* id of the player in the current game session */
+    //             status: "miss"|"killed"|"shot",
+    //         },
+    //     id: 0,
+    // }
 
 
 
