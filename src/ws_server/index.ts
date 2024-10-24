@@ -1,3 +1,12 @@
+///вынести логику игры в отдельный модуль 24.10  ++++++++++
+//добавить текущего игрока. вебсокеты?? 24.10    ++++++++++++
+//проверка на то что игрок уже есть/логин 25.10
+//определить победу - 24.10
+//бот для соло игры 25.10
+//разобраться с сервером клиента
+//автовыстрелы
+//заблочить стрельбу по подбитым кораблям
+
 import { WebSocketServer } from 'ws';
 import WebSocket from 'ws';
 import { ServerActionHandlers } from './serverActionHandlers';
@@ -13,10 +22,6 @@ const WS_HTTP_PORT = 3000;
 interface WebSocketWithUserIndex extends WebSocket  {
     index?: string;
 }
-// interface WebSocketWithId extends WebSocket {
-    
-//   }
-
 
 export class WSServer {
 
@@ -29,10 +34,6 @@ export class WSServer {
     wsHandler = new WebSoketHandler() 
 
     runServer = () => {
-        // this.wss = new WebSocketServer({
-        //     host: WS_HOSTNAME,
-        //     port: WS_HTTP_PORT,
-        //    });
         console.log(`WebSocket server is running on //localhost:${WS_HTTP_PORT}`);   
         this.wss.on('connection', (ws) => {this.clientConnection(ws)})
     }
@@ -61,30 +62,9 @@ export class WSServer {
                 case 'attack':
                     this.serverActionHandlers.handleAttack(JSON.parse(action.data), ws);
                     break;
-                // Add more cases as needed 
-                }
+                                }
         });
 
-
-
-        // ws.on('message', (message) => {
-        //     console.log(`Received message: ${message}`);
-        //     const m = JSON.parse(String(message))
-        //     console.log(m.type, m.data.name);
-        //     const test = ({
-        //         type: "reg",
-        //         data: JSON.stringify(
-        //             {
-        //                 name: "myname",
-        //                 index: 123,
-        //                 error: false,
-        //                 errorText: '',
-        //             }),
-        //         id: 0,
-        //     })
-        //     ws.send(JSON.stringify(test));
-        // });
-       
         ws.on('close', () => {
             console.log('Client disconnected');
         });
