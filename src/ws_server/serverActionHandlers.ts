@@ -133,9 +133,9 @@ export class ServerActionHandlers{
 
         const {player1 , player2} = await this.dbHandler.getPlayersInRoom(roomId)
 
-        const gameId = this.dbHandler.addGame(player1 , player2); 
+        const gameId = await this.dbHandler.addGame(player1 , player2); 
 
-        const ws1 = this.webSoketHandler.getWSByPlayerID(player1)   
+        const ws1 =  this.webSoketHandler.getWSByPlayerID(player1)   
         const ws2 = this.webSoketHandler.getWSByPlayerID(player2)
 
         ws1.send(JSON.stringify({
@@ -154,6 +154,8 @@ export class ServerActionHandlers{
                 idPlayer: player2
             }),
         id: 0 }));
+
+        console.log(gameId)
 
         // {
         //     type: "create_game", //send for both players in the room, after they are connected to the room
@@ -193,15 +195,33 @@ export class ServerActionHandlers{
 
 
     
-    handleAddShips = (data: any, ws: WebSocket) => {
+    handleAddShips = async (data: any, ws: WebSocket) => {
         // Logic to handle adding ships to the game board
-         ws.send(JSON.stringify({
+        console.log(data)
+         await this.dbHandler.addShipsToGame(data.gameId, data.indexPlayer, data.ships)
+
+         if (! await this.dbHandler.isGameReadyStart(data.gameId)) return
+
+         const {shipsPlayer1, shipsPlayer2} =  await this.dbHandler.getShipsPlayersOfGame(data.gameId);
+
+         const ws1 = this.webSoketHandler.getWSByPlayerID(shipsPlayer1.indexPlayer)   
+         const ws2 = this.webSoketHandler.getWSByPlayerID(shipsPlayer2.indexPlayer)
+   
+         ws1.send(JSON.stringify({
             type: 'start_game',
             data: JSON.stringify({
-                ships: data.ships,
-                currentPlayerIndex: data.indexPlayer
+                ships:  shipsPlayer1.ships,
+                currentPlayerIndex: shipsPlayer1.indexPlayer
             }),
             id: 0 }));
+
+            ws2.send(JSON.stringify({
+                type: 'start_game',
+                data: JSON.stringify({
+                    ships: shipsPlayer2.ships,
+                    currentPlayerIndex: shipsPlayer2.indexPlayer
+                }),
+                id: 0 }));
     }
     
     handleAttack = (data: any, ws: WebSocket) => {

@@ -137,6 +137,20 @@ public isRoomFull  = async (roomId: string) => {
     this.games.push({gameId, indexPlayer: player2})
     return gameId;
   }
+
+  public addShipsToGame = async (gameId: string, indexPlayer: string, ships : any) => {
+    const game = this.games.find(game => game.gameId === gameId && game.indexPlayer === indexPlayer) as Game
+    game.ships = ships
+  }
+
+  public isGameReadyStart = async (gameId: string) => {
+    return this.games.filter(game => game.gameId === gameId).length === 2
+  }
+
+  public getShipsPlayersOfGame = async (gameId: string) => {
+    const game = this.games.filter(game => game.gameId === gameId)
+    return {shipsPlayer1: game[0], shipsPlayer2: game[1]}
+  }
   // const roomId = `${rooms.length + 1}`;
   // const newRoom: Room = { id: roomId, players: [] };
   // rooms.push(newRoom);

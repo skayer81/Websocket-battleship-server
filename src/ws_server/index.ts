@@ -56,7 +56,7 @@ export class WSServer {
                     this.serverActionHandlers.handleAddUserToRoom(JSON.parse(action.data).indexRoom, ws);
                     break;
                 case 'add_ships':
-                    this.serverActionHandlers.handleAddShips(action.data, ws);
+                    this.serverActionHandlers.handleAddShips(JSON.parse(action.data), ws);
                     break;
                 case 'attack':
                     this.serverActionHandlers.handleAttack(action.data, ws);
