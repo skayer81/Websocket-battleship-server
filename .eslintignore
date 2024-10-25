@@ -1,0 +1,5 @@
+dist
+front
+webpack.*.*
+*.js
+*.ts
