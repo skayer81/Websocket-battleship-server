@@ -13,7 +13,8 @@
     "startFS": "./index.js",
     "start:prod": "webpack && node dist/bundle.js --NODE_ENV=production",
     "test": "jest",
-    "lint": "npx eslint --fix src",
+    "lint:f": "npx eslint --fix src",
+    "lint": "npx eslint src",
     "prettier": "npx prettier --write ."
   },
   "author": "Andrei Auchynnikau",
@@ -45,6 +46,7 @@
   },
   "dependencies": {
     "dotenv": "^16.4.5",
+    "tsx": "^4.19.1",
     "uuid": "^10.0.0",
     "ws": "^8.18.0"
   }

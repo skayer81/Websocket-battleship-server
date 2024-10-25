@@ -6,7 +6,7 @@ import { Room, Winner, Ship } from "./types/dataTypes";
 
 import WebSocket from "ws";
 
-export function clientRegistration(ws: WebSocket, name: string, index: string) {
+export function clientRegistrationSuccest(ws: WebSocket, name: string, index: string) {
   ws.send(
     JSON.stringify({
       type: "reg",
@@ -19,6 +19,21 @@ export function clientRegistration(ws: WebSocket, name: string, index: string) {
       id: 0,
     }),
   );
+}
+
+export function clientRegistrationError(ws: WebSocket, name: string, errorText: string){
+    ws.send(
+        JSON.stringify({
+          type: "reg",
+          data: JSON.stringify({
+            name,
+            index: '',
+            error: true,
+            errorText,
+          }),
+          id: 0,
+        }),
+      );
 }
 
 export function clientUpdateRoom(ws: WebSocket, rooms: Room[]) {

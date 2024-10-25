@@ -1,23 +1,32 @@
-///вынести логику игры в отдельный модуль 24.10  ++++++++++
-//добавить текущего игрока. вебсокеты?? 24.10    ++++++++++++
-//проверка на то что игрок уже есть/логин 25.10
-//определить победу - 24.10  ++++++++++++++++++++++++++++++
-//бот для соло игры 25.10
-//разобраться с сервером клиента
-//автовыстрелы
-//заблочить стрельбу по подбитым кораблям
-//уьрать комнату при старте игры
-//заблочить вход в комнату с одного окошка
+///вынести логику игры в отдельный модуль 24.10  ++++++++++++++++++++++++
+//добавить текущего игрока. вебсокеты?? 24.10    ++++++++++++++++++++++++
+//проверка на то что игрок уже есть/логин 25.10   +++++++++++++++++++++++
+//определить победу - 24.10  ++++++++++++++++++++++++++++++++++++++++++++
+//бот для соло игры 
+//разобраться с сервером клиента 
+//автовыстрелы           ++++++++++++++++++++++++++++++++++++++++++++++++
+//заблочить стрельбу по подбитым кораблям   +++++++++++++++++++++++++++++
+//уьрать комнату при старте игры 25.10           ++++++++++++++++++++++++
+//автодобавление игрока в комнату                             +++++++++++
+//заблочить вход в комнату если игрок в комнате 25.10       +++++++++++++
 //протестить несколько игр сразу
-//удалить сокет из массива при закрытии
-//баг с первым ходом
-//баг с добавлением в сет ходов клеток вокруг корабля
-//баг с автострельбой
+//удалить сокет из массива при закрытии 25.10            ++++++++++++++++
+//баг с первым ходом                 ++++++++++++++++++++++++++++++++++++
+//баг с добавлением в сет ходов клеток вокруг корабля +++++++++++++++++++
+//баг с автострельбой                      ++++++++++++++++++++++++++++++
+//добавить логирование действий сервера 
+//типизация событий
+//убрать UUIE                              ------------------------
+//что делать с игроком когда он в игре но разлогинился? -----------
+
+
 
 import { WebSocketServer } from "ws";
 import WebSocket from "ws";
 import { ServerActionHandlers } from "./serverActionHandlers";
 import { WebSoketHandler } from "./webSoketHandler";
+//import { SinglPlayField} from './singlePlay/singlePlayShips';
+
 
 const WS_HOSTNAME = "localhost";
 const WS_HTTP_PORT = 3000;
@@ -26,9 +35,9 @@ const WS_HTTP_PORT = 3000;
 //  port: WS_HTTP_PORT,
 // });
 
-interface WebSocketWithUserIndex extends WebSocket {
-  index?: string;
-}
+// interface WebSocketWithUserIndex extends WebSocket {
+//   index?: string;
+// }
 
 export class WSServer {
   wss = new WebSocketServer({
@@ -39,6 +48,13 @@ export class WSServer {
   serverActionHandlers = new ServerActionHandlers();
   wsHandler = new WebSoketHandler();
 
+//   constructor(){
+//     const game = new SinglPlayField();
+// // game.randomizeShips();
+// // game.printField();
+// console.log(game.getShips())
+//   }
+
   runServer = () => {
     console.log(`WebSocket server is running on //localhost:${WS_HTTP_PORT}`);
     this.wss.on("connection", (ws) => {
@@ -48,6 +64,8 @@ export class WSServer {
 
   clientConnection = (ws: WebSocket) => {
     console.log("New client connected");
+
+    //this.wsHandler.addWebSoket(ws);
 
     ws.on("message", (message: string) => {
       const action = JSON.parse(message);
@@ -73,12 +91,18 @@ export class WSServer {
           this.serverActionHandlers.handleAttack(JSON.parse(action.data), ws);
           break;
         case "randomAttack":
-            this.serverActionHandlers.handlerandomAttack(JSON.parse(action.data), ws);
-            break;
+          this.serverActionHandlers.handlerandomAttack(
+            JSON.parse(action.data),
+            ws,
+          );
+          break;
+        case "single_play":
+            this.serverActionHandlers.handleSinglePlay(ws)
       }
     });
 
     ws.on("close", () => {
+        this.serverActionHandlers.closeWebSoket(ws);
       console.log("Client disconnected");
     });
   };

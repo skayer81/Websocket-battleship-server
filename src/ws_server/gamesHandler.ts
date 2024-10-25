@@ -8,68 +8,11 @@ import {
   clientFinish,
   clientUpdateWinners,
 } from "./clientActionHandler";
-import WebSocket from "ws";
-import { DBHandler } from "./dataBaseHandler";
-//import { User, PartialUser } from "src/types";
 
-//import
+import { RoomsHandler } from "./roomsHandler";
+import { Ship, Player, Game } from "./types/gameTypes";
 
-// interface PlayerInRoom {
-//     name: string;
-//     index: string;
-// }
 
-// interface Player extends PlayerInRoom{
-//     password: string;
-// }
-
-// interface Room {
-//     roomId: string;
-//     roomUsers: PlayerInRoom[];
-// }
-
-// interface Winner {
-//     id: string;
-//     name: string;
-//     wins: number;
-// }
-
-interface Ship {
-  position: {
-    x: number;
-    y: number;
-  };
-  direction: boolean;
-  length: number;
-  type: "small" | "medium" | "large" | "huge";
-  shots: boolean[];
-}
-
-interface Player {
-  indexPlayer: string;
-  ships: Ship[] | [];
-  ws: WebSocket;
-  shots: Set<string>;
-}
-
-interface Game {
-  gameId: string;
-  players: [Player, Player];
-  // player1: {
-  //     indexPlayer: string
-  //     ships?: Ship[],
-  //     ws: WebSocket
-  // }
-  // player2: {
-  //     ships?: Ship[],
-  //     indexPlayer: string,
-  //     ws: WebSocket
-  // }
-  currentPlayer: Player; //string;
-  // ships?: Ship[],
-
-  // indexPlayer:  string, /* id of the player in the current game session */
-}
 
 //const players: Player[] = [];
 //const rooms: Room[] = [];
@@ -81,7 +24,7 @@ export class GamesHandler {
   // private rooms: Room[] = [];
   //private winners : Winner[] = [];
   webSoketHandler = new WebSoketHandler();
-  dbHandler = new DBHandler();
+  roomsHandler = new RoomsHandler();
 
   private games: Game[] = [];
 
@@ -239,7 +182,7 @@ export class GamesHandler {
 
     if (!player) {
       throw new Error(
-        `Player with index ${indexPlayer} not found in game ${gameId}`,
+        `Player with index ${indexPlayer} not found in game ${gameId} gameHandler:185`,
       );
     }
 
@@ -258,9 +201,11 @@ export class GamesHandler {
     const game = this.games.find((game) => game.gameId === gameId);
     game?.players.forEach((player) => {
       clientStartGame(player.ws, player.ships, player.indexPlayer);
-
+      clientTurn(player.ws, game.currentPlayer.indexPlayer);
       // clientCreateGame(player.ws , game.gameId, player.indexPlayer)
     });
+    //  clientTurn(game?.players[0].ws, game.currentPlayer.indexPlayer);
+    // clientTurn(game.players[1].ws, game.currentPlayer.indexPlayer);
 
     //const isGameReadyStart = await this.gamesHandler.isGameReadyStart(data.gameId)
     //if (!isGameReadyStart) return
@@ -294,7 +239,7 @@ export class GamesHandler {
     return result;
   }
 
-  private getRandomShot(player: Player): { x: number; y: number } {
+  protected getRandomShot(player: Player): { x: number; y: number } {
     let shot: { x: number; y: number };
     do {
       shot = {
@@ -307,7 +252,6 @@ export class GamesHandler {
     return shot; // Возврат уникальных координат
   }
 
-
   public attackAction = async (
     gameId: string,
     indexPlayer: string,
@@ -318,7 +262,11 @@ export class GamesHandler {
 
     //   const isUserTurn = this.test === data.indexPlayer;
     if (!(game?.currentPlayer.indexPlayer === indexPlayer)) return;
-    if (game.currentPlayer.shots.has(`${x},${y}`)) return;
+    if (game.currentPlayer.shots.has(`${x},${y}`)) {
+      //  clientTurn(game.players[0].ws, game.currentPlayer.indexPlayer);
+      //   clientTurn(game.players[1].ws, game.currentPlayer.indexPlayer);
+      return;
+    }
     // const player = game?.currentPlayer === game.players
     game.currentPlayer.shots.add(`${x},${y}`);
 
@@ -358,12 +306,12 @@ export class GamesHandler {
         // this.webSoketHandler.addWebSoket(ws, newPlayer.index)
         //  clientRegistration(ws, name, newPlayer.index);
 
-        await this.dbHandler.addWinner(game.currentPlayer.indexPlayer);
-        const winners = await this.dbHandler.getWinners();
+      //  await this.dbHandler.addWinner(game.currentPlayer.indexPlayer);
+       // const winners = await this.dbHandler.getWinners();
 
         this.webSoketHandler.getAllWS().forEach(async (ws) => {
           //  clientUpdateRoom(ws.ws, await this.dbHandler.getRooms());
-          clientUpdateWinners(ws.ws, winners);
+     //     clientUpdateWinners(ws.ws, winners);
         });
         //this.webSoketHandler.getAllWS.
         // clientUpdateWinners(ws.ws, await this.dbHandler.getWinners())
@@ -379,18 +327,19 @@ export class GamesHandler {
 
     clientTurn(game.players[0].ws, game.currentPlayer.indexPlayer);
     clientTurn(game.players[1].ws, game.currentPlayer.indexPlayer);
-    game.currentPlayer.shots.add(`${x},${y}`);
+    //  game.currentPlayer.shots.add(`${x},${y}`);
     // game.currentPlayer.shoots.add
     //  clientTurn(ws2, this.test)
   };
 
-  public randomAttack =  async (gameId : string, playerIndex: string) => {
+  public randomAttack = async (gameId: string, playerIndex: string) => {
     const game = this.games.find((game) => game.gameId === gameId) as Game;
-    const otherPlayer = game.currentPlayer === game.players[0] ? game.players[1] : game.players[0]
-    const {x , y} = this.getRandomShot(otherPlayer)
-    this.attackAction(gameId, playerIndex, x , y);
-      //const 
-  }
+    //const otherPlayer = game.currentPlayer === game.players[0] ? game.players[1] : game.players[0]
+
+    const { x, y } = this.getRandomShot(game.currentPlayer);
+    this.attackAction(gameId, playerIndex, x, y);
+    //const
+  };
 
   private missesAroundShip(game: Game, ship: Ship) {
     type PositionIndex = "x" | "y";
@@ -398,7 +347,6 @@ export class GamesHandler {
     const lengthCoordinate: PositionIndex = ship.direction ? "y" : "x";
     const position = { x: ship.position.x, y: ship.position.y };
 
-    // Функция для отправки сообщения о промахе
     const sendMiss = () => {
       // position.x = x;
       // position.y = y;
@@ -414,6 +362,7 @@ export class GamesHandler {
         "miss",
         position,
       );
+      game.currentPlayer.shots.add(`${position.x},${position.y}`);
     };
 
     // Обрабатываем промахи вокруг корабля
@@ -444,8 +393,6 @@ export class GamesHandler {
     //    sendMiss(ship.position[widthCoordinate], ship.position[lengthCoordinate] - 1); // Промах над
     //   sendMiss(ship.position[widthCoordinate], ship.position[lengthCoordinate] + ship.length); // Промах под
   }
-
-
 
   //  private missesAroundShip(ship: Ship){
   //     type PositionIndex = 'x'|'y';
@@ -496,10 +443,10 @@ export class GamesHandler {
   //     return this.games.filter(game => game.gameId === gameId && game.ships).length === 2
   //   }
 
-//   public getShipsPlayersOfGame = async (gameId: string) => {
-//     const game = this.games.filter((game) => game.gameId === gameId);
-//     return { shipsPlayer1: game[0], shipsPlayer2: game[1] };
-//   };
+  //   public getShipsPlayersOfGame = async (gameId: string) => {
+  //     const game = this.games.filter((game) => game.gameId === gameId);
+  //     return { shipsPlayer1: game[0], shipsPlayer2: game[1] };
+  //   };
 
   public getAttackResult = async (ships: Ship[], x: number, y: number) => {
     //  const game = this.games.find(game => game.gameId === gameId && game.indexPlayer !== indexPlayer);

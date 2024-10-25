@@ -7,6 +7,7 @@ type WSListItem = {
 
 export class WebSoketHandler {
   private wsList: Array<WSListItem> = [];
+  
 
   private static instance: WebSoketHandler | null = null;
 
@@ -18,7 +19,7 @@ export class WebSoketHandler {
     WebSoketHandler.instance = this;
   }
 
-  public addWebSoket(ws: WebSocket, playerID: string) {
+  public addWebSoket(ws: WebSocket, playerID = '') {
     const wsListItem = {
       ws,
       playerID,
@@ -26,7 +27,22 @@ export class WebSoketHandler {
     this.wsList.push(wsListItem);
   }
 
-  public delWebSoket() {}
+  public delWebSoket(ws: WebSocket) {
+    this.wsList = this.wsList.filter(element => element.ws !== ws);
+  }
+
+
+
+//   function removeElement(arr, value) {
+//     return arr.filter(element => element !== value);
+// }
+
+// // Пример использования
+// const originalArray = [1, 2, 3, 4, 5];
+// const newArray = removeElement(originalArray, 3);
+// console.log(newArray); // Вывод: [1, 2, 4, 5]
+
+
 
   public getWSByPlayerID(playerID: string) {
     const ws = this.wsList.find((ws) => ws.playerID === playerID);
@@ -36,10 +52,11 @@ export class WebSoketHandler {
 
   public getPlayerIDByWS(ws: WebSocket) {
     this.wsList.forEach((item) => {
-      console.log("ид в базе сокетов", item.playerID);
+     // console.log("ид в базе сокетов", item.playerID);
     });
-    const id = this.wsList.find((item) => item.ws === ws);
-    return id;
+    const playerID = this.wsList.find((item) => item.ws === ws)?.playerID;
+    if (!playerID) throw new Error()
+    return playerID;
   }
 
   public getAllWS() {
