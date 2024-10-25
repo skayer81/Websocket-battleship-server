@@ -70,7 +70,7 @@ export function clientAttack(ws: WebSocket, currentPlayer: string, status: strin
 
 export function clientTurn(ws: WebSocket, currentPlayer: string ){
     ws.send(JSON.stringify({
-        type: 'start_game',
+        type: 'turn',
         data: JSON.stringify({
         //position: { x: data.x, y: data.y },
         currentPlayer
@@ -78,4 +78,28 @@ export function clientTurn(ws: WebSocket, currentPlayer: string ){
         }),
     id: 0 })); 
 }
+
+export function clientFinish(ws: WebSocket, winPlayer: string ){
+    ws.send(JSON.stringify({
+        type: 'finish',
+        data: JSON.stringify({
+        //position: { x: data.x, y: data.y },
+        winPlayer
+       // status: attackstatus ? "shot" : 'miss' // Example status 
+        }),
+    id: 0 })); 
+}
+
+
+
+
+
+// {
+//     type: "finish",
+//     data:
+//         {
+//             winPlayer: <number | string>, /* id of the player in the current game session */
+//         },
+//     id: 0,
+// }
 

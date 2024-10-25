@@ -1,7 +1,8 @@
 import { v4 as uuidv4 } from "uuid";
 import { WebSoketHandler } from "./webSoketHandler" //; = require("ws");
-import { clientCreateGame, clientStartGame , clientAttack, clientTurn} from "./clientActionHandler";
+import { clientCreateGame, clientStartGame , clientAttack, clientTurn, clientFinish, clientUpdateWinners} from "./clientActionHandler";
 import WebSocket from 'ws';
+import { DBHandler } from "./dataBaseHandler";
 //import { User, PartialUser } from "src/types";
 
 //import  
@@ -77,6 +78,7 @@ export class GamesHandler {
  // private rooms: Room[] = [];
   //private winners : Winner[] = [];
   webSoketHandler = new WebSoketHandler()
+  dbHandler = new DBHandler()
 
   private games : Game[] = []
 
@@ -258,11 +260,17 @@ export class GamesHandler {
 
     }
 
-   private getShipsPlayer(game: Game){
+   private getShipsOtherPlayer(game: Game){
      const result = game.players.find(player => player.indexPlayer !== game.currentPlayer)?.ships
      if (!result || result.length === 0) throw new Error()
 
 return result    }
+
+private isAllShipKill(game: Game){
+    const ships = this.getShipsOtherPlayer(game);
+    const result = ships.every(ship => ship.shots.every(Boolean))
+    return result
+}   
 
 
 
@@ -272,7 +280,8 @@ return result    }
      //   const isUserTurn = this.test === data.indexPlayer;
         if ( !(game?.currentPlayer === indexPlayer )) return
 
-        const attackResult =  await this.getAttackResult(this.getShipsPlayer(game) , x , y)
+
+        const attackResult =  await this.getAttackResult(this.getShipsOtherPlayer(game) , x , y)
 
        // const {player1 , player2} = await this.dbHandler.getPlayersInGame(gameId);
 
@@ -295,7 +304,25 @@ return result    }
         // clientAttack(ws2, indexPlayer, attackResult.status, {x:data.x, y:data.y})
         if (attackResult.status === 'killed'){
             if (!attackResult.ship) throw new Error ("корабль пустой")
-            this.missesAroundShip(game, attackResult.ship)  
+            this.missesAroundShip(game, attackResult.ship);
+            if (this.isAllShipKill(game)) {
+                clientFinish(game.players[0].ws, game.currentPlayer)
+                clientFinish(game.players[1].ws, game.currentPlayer)
+               // this.webSoketHandler.addWebSoket(ws, newPlayer.index)
+              //  clientRegistration(ws, name, newPlayer.index);
+
+                await this.dbHandler.addWinner( game.currentPlayer);
+                const winners =  await this.dbHandler.getWinners()
+    
+                this.webSoketHandler.getAllWS().forEach(async( ws)  =>  {
+    
+                  //  clientUpdateRoom(ws.ws, await this.dbHandler.getRooms());
+                    clientUpdateWinners(ws.ws, winners)
+    
+                });
+                //this.webSoketHandler.getAllWS.
+               // clientUpdateWinners(ws.ws, await this.dbHandler.getWinners())
+            }
         }
 
           if (attackResult.status === 'miss'){

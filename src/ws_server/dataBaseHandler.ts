@@ -55,7 +55,7 @@ export class DBHandler {
   private players: Player[] = [];
   private rooms: Room[] = [];
   private winners : Winner[] = [];
-  private games : Game[] = []
+  //rivate games : Game[] = []
 
   constructor() {
     if (DBHandler.instance) {
@@ -95,6 +95,23 @@ export class DBHandler {
   public getWinners = async () => {
     return this.winners
   }
+
+  public addWinner = async (winnerID: string) => {
+    let winner : Winner|undefined = this.winners.find(user => user.id === winnerID)
+    if (winner) {
+        winner.wins += 1;
+        return
+    }
+    winner = 
+     {
+        id: winnerID,
+        name: this.players.find(user => user.index === winnerID)?.name ?? '' , 
+        wins: 1
+    }
+    this.winners.push(winner)
+
+
+  } 
 
   public addPlayerToRoom = async (playerIndex: string, roomId: string) => {
     const room  = this.rooms.find((room) => room.roomId === roomId);
