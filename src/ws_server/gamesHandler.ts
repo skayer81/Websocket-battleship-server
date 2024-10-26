@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { WebSoketHandler } from "./webSoketHandler"; //; = require("ws");
+import { WebSoketHandler } from "./webSoketHandler"; // ; = require("ws");
 import {
   clientCreateGame,
   clientStartGame,
@@ -10,21 +10,20 @@ import {
 } from "./clientActionHandler";
 
 import { RoomsHandler } from "./roomsHandler";
-import { Ship, Player, Game } from "./types/gameTypes";
+import { Ship, Player, Game, AttackResult } from "./types/gameTypes";
 
-
-
-//const players: Player[] = [];
-//const rooms: Room[] = [];
+// const players: Player[] = [];
+// const rooms: Room[] = [];
 
 export class GamesHandler {
-  //private static instance: DBHandler | null = null;
+  // private static instance: DBHandler | null = null;
 
   // private players: Player[] = [];
   // private rooms: Room[] = [];
-  //private winners : Winner[] = [];
-  webSoketHandler = new WebSoketHandler();
-  roomsHandler = new RoomsHandler();
+  // private winners : Winner[] = [];
+  protected webSoketHandler = new WebSoketHandler();
+
+  private roomsHandler = new RoomsHandler();
 
   private games: Game[] = [];
 
@@ -37,11 +36,11 @@ export class GamesHandler {
 
   //   }
 
-  //   public isPlayerExist = async (name: string) => {
+  //   public isPlayerExist =   (name: string) => {
   //     return this.players.find(player => player.name === name);
   //   }
 
-  //   public addPlayer = async ( name: string, password: string): Promise<Player> => {
+  //   public addPlayer =   ( name: string, password: string): Promise<Player> => {
   //     const newPlayer = {
   //         name,
   //         password,
@@ -52,7 +51,7 @@ export class GamesHandler {
   //     return newPlayer
   //   }
 
-  //   public getRooms = async () => {
+  //   public getRooms =   () => {
   //     const result =   this.rooms.map(room => ({
   //         roomId: room.roomId,
   //         roomUsers: room.roomUsers.map(player => ({
@@ -63,11 +62,11 @@ export class GamesHandler {
   //    // return result;
   //   }
 
-  //   public getWinners = async () => {
+  //   public getWinners =   () => {
   //     return this.winners
   //   }
 
-  //   public addPlayerToRoom = async (playerIndex: string, roomId: string) => {
+  //   public addPlayerToRoom =   (playerIndex: string, roomId: string) => {
   //     const room  = this.rooms.find((room) => room.roomId === roomId);
   //     const player = this.players.find( player => player.index === playerIndex)
   //     room?.roomUsers.push({
@@ -88,11 +87,11 @@ export class GamesHandler {
   //     }
   // ],
 
-  // public isRoomFull  = async (roomId: string) => {
+  // public isRoomFull  =   (roomId: string) => {
   //     return this.rooms.find(room => room.roomId === roomId)?.roomUsers.length === 2
   //   }
 
-  //   public addRoom = async () => {
+  //   public addRoom =   () => {
   //     const newRoom : Room = {
   //         roomId: uuidv4(),
   //         roomUsers: [],
@@ -100,24 +99,24 @@ export class GamesHandler {
   //     this.rooms.push(newRoom)
   //   }
 
-  //   public getPlayersInRoom = async (roomId: string) => {
+  //   public getPlayersInRoom =   (roomId: string) => {
   //     const room : Room=  this.rooms.find(room => room.roomId === roomId) as Room
   //     return {player1: room.roomUsers[0].index, player2: room.roomUsers[1].index}
   //   }
 
-  //   public getPlayersInGame = async (gameId: string) => {
+  //   public getPlayersInGame =   (gameId: string) => {
   //     const game =  this.games.filter(game => game.gameId  === gameId)// as Game[]
   //     return {player1: game[0].indexPlayer, player2: game[1].indexPlayer}
   //   }
 
-  //   public addGame = async (player1: string, player2: string) => {
+  //   public addGame =   (player1: string, player2: string) => {
   //     const gameId = uuidv4();
   //     this.games.push({gameId, indexPlayer: player1})
   //     this.games.push({gameId, indexPlayer: player2})
   //     return gameId;
   //   }
 
-  private createPlayer(playerID: string) {
+  private createPlayer(playerID: string) :Player {
     return {
       indexPlayer: playerID,
       ws: this.webSoketHandler.getWSByPlayerID(playerID),
@@ -126,14 +125,14 @@ export class GamesHandler {
     };
   }
 
-  public addGame = async (player1ID: string, player2ID: string) => {
+  public addGame =  (player1ID: string, player2ID: string) : void=> {
     const player1 = this.createPlayer(player1ID);
     const player2 = this.createPlayer(player2ID);
     const currentPlayer = Math.random() > 0.5 ? player1 : player2;
     const game: Game = {
       gameId: uuidv4(),
       players: [player1, player2],
-      currentPlayer: currentPlayer,
+      currentPlayer,
       //         {
       //         indexPlayer: player1ID,
       //         ws: this.webSoketHandler.getWSByPlayerID(player1ID),
@@ -167,18 +166,18 @@ export class GamesHandler {
     //   clientCreateGame(this.webSoketHandler.getWSByPlayerID(player2), gameId, player2  )
 
     // this.games.push({gameId, indexPlayer: player1})
-    //this.games.push({gameId, indexPlayer: player2})
+    // this.games.push({gameId, indexPlayer: player2})
     //  return gameId;
   };
 
-  public addShipsToGame = async (
+  public addShipsToGame =   (
     gameId: string,
     indexPlayer: string,
     ships: Ship[],
-  ) => {
+  ) : void => {
     const player = this.games
       .find((game) => game.gameId === gameId)
-      ?.players?.find((player) => player.indexPlayer === indexPlayer); //as Player;
+      ?.players?.find((player) => player.indexPlayer === indexPlayer); // as Player;
 
     if (!player) {
       throw new Error(
@@ -192,12 +191,13 @@ export class GamesHandler {
     });
   };
 
-  public isAllPlayerReady = async (gameId: string) => {
+  public isAllPlayerReady =   (gameId: string) : boolean => {
     const players = this.games.find((game) => game.gameId === gameId)?.players;
-    return players?.every((player) => player.ships.length > 0);
+    if (!players) throw new Error()
+    return players.every((player) => player.ships.length > 0);
   };
 
-  public startGame = async (gameId: string) => {
+  public startGame =   (gameId: string) => {
     const game = this.games.find((game) => game.gameId === gameId);
     game?.players.forEach((player) => {
       clientStartGame(player.ws, player.ships, player.indexPlayer);
@@ -207,12 +207,12 @@ export class GamesHandler {
     //  clientTurn(game?.players[0].ws, game.currentPlayer.indexPlayer);
     // clientTurn(game.players[1].ws, game.currentPlayer.indexPlayer);
 
-    //const isGameReadyStart = await this.gamesHandler.isGameReadyStart(data.gameId)
-    //if (!isGameReadyStart) return
+    // const isGameReadyStart =   this.gamesHandler.isGameReadyStart(data.gameId)
+    // if (!isGameReadyStart) return
 
-    //this.gamesHandler.startGame()
+    // this.gamesHandler.startGame()
 
-    //const {shipsPlayer1, shipsPlayer2} =  await this.dbHandler.getShipsPlayersOfGame(data.gameId);
+    // const {shipsPlayer1, shipsPlayer2} =    this.dbHandler.getShipsPlayersOfGame(data.gameId);
 
     // const ws1 = this.webSoketHandler.getWSByPlayerID(shipsPlayer1.indexPlayer)
     // const ws2 = this.webSoketHandler.getWSByPlayerID(shipsPlayer2.indexPlayer)
@@ -223,17 +223,19 @@ export class GamesHandler {
     // clientStartGame(this.webSoketHandler.getWSByPlayerID(shipsPlayer2.indexPlayer), shipsPlayer2.ships, shipsPlayer1.indexPlayer)
   };
 
-  private getShipsOtherPlayer(game: Game) {
+  private getShipsOtherPlayer(game: Game) : Ship[] {
     // const result = game.players.find(player => player.indexPlayer !== game.currentPlayer)?.ships
     const result = game.players.find(
       (player) => player !== game.currentPlayer,
     )?.ships;
-    if (!result || result.length === 0) throw new Error();
+    if (!result || result.length === 0) {
+      throw new Error();
+    }
 
     return result;
   }
 
-  private isAllShipKill(game: Game) {
+  private isAllShipKill(game: Game): boolean {
     const ships = this.getShipsOtherPlayer(game);
     const result = ships.every((ship) => ship.shots.every(Boolean));
     return result;
@@ -243,8 +245,8 @@ export class GamesHandler {
     let shot: { x: number; y: number };
     do {
       shot = {
-        x: Math.floor(Math.random() * 10), //this.fieldSize),
-        y: Math.floor(Math.random() * 10), //this.fieldSize),
+        x: Math.floor(Math.random() * 10), // this.fieldSize),
+        y: Math.floor(Math.random() * 10), // this.fieldSize),
       };
     } while (player.shots.has(`${shot.x},${shot.y}`)); // Проверка на уникальность
 
@@ -252,7 +254,7 @@ export class GamesHandler {
     return shot; // Возврат уникальных координат
   }
 
-  public attackAction = async (
+  public attackAction =   (
     gameId: string,
     indexPlayer: string,
     x: number,
@@ -261,7 +263,9 @@ export class GamesHandler {
     const game = this.games.find((game) => game.gameId === gameId);
 
     //   const isUserTurn = this.test === data.indexPlayer;
-    if (!(game?.currentPlayer.indexPlayer === indexPlayer)) return;
+    if (!(game?.currentPlayer.indexPlayer === indexPlayer)) {
+      return;
+    }
     if (game.currentPlayer.shots.has(`${x},${y}`)) {
       //  clientTurn(game.players[0].ws, game.currentPlayer.indexPlayer);
       //   clientTurn(game.players[1].ws, game.currentPlayer.indexPlayer);
@@ -270,13 +274,13 @@ export class GamesHandler {
     // const player = game?.currentPlayer === game.players
     game.currentPlayer.shots.add(`${x},${y}`);
 
-    const attackResult = await this.getAttackResult(
+    const attackResult =   this.getAttackResult(
       this.getShipsOtherPlayer(game),
       x,
       y,
     );
 
-    // const {player1 , player2} = await this.dbHandler.getPlayersInGame(gameId);
+    // const {player1 , player2} =   this.dbHandler.getPlayersInGame(gameId);
 
     // const ws1 =  this.webSoketHandler.getWSByPlayerID(player1)
     // const ws2 = this.webSoketHandler.getWSByPlayerID(player2)
@@ -298,7 +302,9 @@ export class GamesHandler {
     // clientAttack(ws1, indexPlayer, attackResult.status, {x:data.x, y:data.y})
     // clientAttack(ws2, indexPlayer, attackResult.status, {x:data.x, y:data.y})
     if (attackResult.status === "killed") {
-      if (!attackResult.ship) throw new Error("корабль пустой");
+      if (!attackResult.ship) {
+        throw new Error("корабль пустой");
+      }
       this.missesAroundShip(game, attackResult.ship);
       if (this.isAllShipKill(game)) {
         clientFinish(game.players[0].ws, game.currentPlayer.indexPlayer);
@@ -306,15 +312,15 @@ export class GamesHandler {
         // this.webSoketHandler.addWebSoket(ws, newPlayer.index)
         //  clientRegistration(ws, name, newPlayer.index);
 
-      //  await this.dbHandler.addWinner(game.currentPlayer.indexPlayer);
-       // const winners = await this.dbHandler.getWinners();
+        //    this.dbHandler.addWinner(game.currentPlayer.indexPlayer);
+        // const winners =   this.dbHandler.getWinners();
 
-        this.webSoketHandler.getAllWS().forEach(async (ws) => {
-          //  clientUpdateRoom(ws.ws, await this.dbHandler.getRooms());
-     //     clientUpdateWinners(ws.ws, winners);
+        this.webSoketHandler.getAllWS().forEach(  (ws) => {
+          //  clientUpdateRoom(ws.ws,   this.dbHandler.getRooms());
+          //     clientUpdateWinners(ws.ws, winners);
         });
-        //this.webSoketHandler.getAllWS.
-        // clientUpdateWinners(ws.ws, await this.dbHandler.getWinners())
+        // this.webSoketHandler.getAllWS.
+        // clientUpdateWinners(ws.ws,   this.dbHandler.getWinners())
       }
     }
 
@@ -332,13 +338,13 @@ export class GamesHandler {
     //  clientTurn(ws2, this.test)
   };
 
-  public randomAttack = async (gameId: string, playerIndex: string) => {
+  public randomAttack =   (gameId: string, playerIndex: string) => {
     const game = this.games.find((game) => game.gameId === gameId) as Game;
-    //const otherPlayer = game.currentPlayer === game.players[0] ? game.players[1] : game.players[0]
+    // const otherPlayer = game.currentPlayer === game.players[0] ? game.players[1] : game.players[0]
 
     const { x, y } = this.getRandomShot(game.currentPlayer);
     this.attackAction(gameId, playerIndex, x, y);
-    //const
+    // const
   };
 
   private missesAroundShip(game: Game, ship: Ship) {
@@ -428,7 +434,7 @@ export class GamesHandler {
 
   // }
 
-  //   public addShipsToGame = async (gameId: string, indexPlayer: string, ships : any) => {
+  //   public addShipsToGame =   (gameId: string, indexPlayer: string, ships : any) => {
   //     const game = this.games.find(game => game.gameId === gameId) as Game
   //     const player = game.players.find(player => player.indexPlayer === indexPlayer) as Player
   //    // const player = this.games.reduce(() => {} ) find(game => game.gameId === gameId) as Game
@@ -438,25 +444,25 @@ export class GamesHandler {
   //     })
   //   }
 
-  //   public isGameReadyStart = async (gameId: string) => {
+  //   public isGameReadyStart =   (gameId: string) => {
   //     console.log("this.games", this.games)
   //     return this.games.filter(game => game.gameId === gameId && game.ships).length === 2
   //   }
 
-  //   public getShipsPlayersOfGame = async (gameId: string) => {
+  //   public getShipsPlayersOfGame =   (gameId: string) => {
   //     const game = this.games.filter((game) => game.gameId === gameId);
   //     return { shipsPlayer1: game[0], shipsPlayer2: game[1] };
   //   };
 
-  public getAttackResult = async (ships: Ship[], x: number, y: number) => {
+  public getAttackResult =   (ships: Ship[], x: number, y: number) : AttackResult=> {
     //  const game = this.games.find(game => game.gameId === gameId && game.indexPlayer !== indexPlayer);
 
     // if (!game || !game.ships) {
     //     throw new Error("Не найдены кораблики");
     // }
 
-    //const ships = game.ships;
-    let result: { status: string; ship: Ship | null } = {
+    // const ships = game.ships;
+    const result: AttackResult = {
       status: "miss",
       ship: null,
     };
@@ -479,7 +485,7 @@ export class GamesHandler {
     return result;
   };
 
-  private checkHit(ship: Ship, x: number, y: number) {
+  private checkHit(ship: Ship, x: number, y: number): {index: number } | null {
     if (!ship.direction) {
       // Горизонтальный корабль
       if (
@@ -502,7 +508,7 @@ export class GamesHandler {
     return null; // Не попали
   }
 
-  //   public getAttackResult = async (gameId: string, indexPlayer: string, x: number , y: number) => {
+  //   public getAttackResult =   (gameId: string, indexPlayer: string, x: number , y: number) => {
   //     const game = this.games.find(game => game.gameId === gameId && game.indexPlayer !== indexPlayer);
   //     const ships = game?.ships;
   //     console.log(ships);

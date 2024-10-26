@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
-//import { User, PartialUser } from "src/types";
+// import { User, PartialUser } from "src/types";
 
-//import
+// import
 
 // interface PlayerInRoom {
 //   name: string;
@@ -13,7 +13,7 @@ interface Player {
   index: string;
   password: string;
   wins: number;
-  isOnline: boolean
+  isOnline: boolean;
 }
 
 // interface Room {
@@ -52,8 +52,8 @@ export class UsersHandler {
   private static instance: UsersHandler | null = null;
 
   private players: Player[] = [];
-//   private rooms: Room[] = [];
-//   private winners: Winner[] = [];
+  //   private rooms: Room[] = [];
+  //   private winners: Winner[] = [];
   // rivate games : Game[] = []
 
   constructor() {
@@ -63,114 +63,112 @@ export class UsersHandler {
     }
     UsersHandler.instance = this;
     this.players.push({
-        name: 'test1',
-        index: 'string',
-        password: '11111',
-        wins: 4,
-        isOnline: true
-    })
+      name: "test1",
+      index: "string",
+      password: "11111",
+      wins: 4,
+      isOnline: true,
+    });
     this.players.push({
-        name: 'test2',
-        index: 'string',
-        password: '11111',
-        wins: 3,
-        isOnline: false
-    })
+      name: "test2",
+      index: "string",
+      password: "11111",
+      wins: 3,
+      isOnline: false,
+    });
     this.players.push({
-        name: 'test3',
-        index: 'string',
-        password: '11111',
-        wins: 2,
-        isOnline: false
-    })
+      name: "test3",
+      index: "string",
+      password: "11111",
+      wins: 2,
+      isOnline: false,
+    });
   }
 
-  private getPlayerByName = async(name: string) : Promise<Player> => {
-    const player =  this.players.find((player) => player.name === name);
-    if (!player) throw new Error(`player whit name ${name} is not exist`)
-    return player
-  }
+  private getPlayerByName =  (name: string): Player => {
+    const player = this.players.find((player) => player.name === name);
+    if (!player) {
+      throw new Error(`player whit name ${name} is not exist`);
+    }
+    return player;
+  };
 
-  private getPlayerByID = async(playerID: string) : Promise<Player> => {
-    const player =  this.players.find((player) => player.index === playerID);
-    if (!player) throw new Error(`player whit ID ${playerID} is not exist`)
-    return player
-  }
+  private getPlayerByID =  (playerID: string): Player => {
+    const player = this.players.find((player) => player.index === playerID);
+    if (!player) {
+      throw new Error(`player whit ID ${playerID} is not exist`);
+    }
+    return player;
+  };
 
-//   private findPlayerByName = async(name: string) => {
-//     const player =  this.players.find((player) => player.name === name);
-//     if (!player) throw new Error(`player whit name ${name} is not exist`)
-//   }
+  //   private findPlayerByName =  (name: string) => {
+  //     const player =  this.players.find((player) => player.name === name);
+  //     if (!player) throw new Error(`player whit name ${name} is not exist`)
+  //   }
 
-  public isPlayerExist = async (name: string) : Promise<boolean> => {
-    const player =  this.players.find((player) => player.name === name);
+  public isPlayerExist =  (name: string): boolean => {
+    const player = this.players.find((player) => player.name === name);
     return Boolean(player);
   };
 
-  public isPasswordCorrect = async (name: string, password: string): Promise<boolean> => {
-    const player = await this.getPlayerByName(name);
-    return player.password === password
-  }
-
-  public isUserOnlain = async (name: string): Promise<boolean> => {
-    const player = await this.getPlayerByName(name);
-    return player.isOnline;
-  }
-
-  public getPlayerID = async (name: string): Promise<string> => {
-    return (await this.getPlayerByName(name)).index;
-  }
-
-  public getPlayerName = async (playerID: string): Promise<string> => {
-    return (await this.getPlayerByID(playerID)).name;
-  }
-
-
-
-  public addPlayer = async (
+  public isPasswordCorrect =  (
     name: string,
     password: string,
-  ): Promise<void>=> {
+  ): boolean => {
+    const player = this.getPlayerByName(name);
+    return player.password === password;
+  };
+
+  public isUserOnlain =  (name: string): boolean => {
+    const player =  this.getPlayerByName(name);
+    return player.isOnline;
+  };
+
+  public getPlayerID =  (name: string): string =>
+    ( this.getPlayerByName(name)).index;
+
+  public getPlayerName =  (playerID: string): string =>
+    ( this.getPlayerByID(playerID)).name;
+
+  public addPlayer = (name: string, password: string): void => {
     const newPlayer = {
       name,
       password,
       index: uuidv4(),
       wins: 0,
-      isOnline: false
+      isOnline: false,
     };
     console.log("новый игрок в базе", newPlayer);
     this.players.push(newPlayer);
-   // return newPlayer;
+    // return newPlayer;
   };
 
-  public setOnlineStatus = async ( playerID: string, status: boolean) => {
-     (await this.getPlayerByID(playerID)).isOnline = status
-  }
-
-//   public getRooms = async () => {
-//     const result = this.rooms.map((room) => ({
-//       roomId: room.roomId,
-//       roomUsers: room.roomUsers.map((player) => ({
-//         name: player.name,
-//         index: player.index,
-//       })),
-//     }));
-//     return this.rooms;
-//     // return result;
-//   };
-
-  public getWinners = async () => {
-    const winners : Winner[]=  this.players.map((player) => {
-        return {
-            id: player.index,
-            name: `${player.name} ${player.isOnline? '(online)' : ''})`, // this.players.find((user) => user.index === winnerID)?.name ?? "",
-            wins: player.wins,
-        }
-    });
-    return winners.sort((a, b) => Number(a.wins > b.wins))
+  public setOnlineStatus = (playerID: string, status: boolean) : void => {
+   this.getPlayerByID(playerID).isOnline = status;
   };
 
-  public addWinner = async (winnerID: string) => {
+  //   public getRooms =   () => {
+  //     const result = this.rooms.map((room) => ({
+  //       roomId: room.roomId,
+  //       roomUsers: room.roomUsers.map((player) => ({
+  //         name: player.name,
+  //         index: player.index,
+  //       })),
+  //     }));
+  //     return this.rooms;
+  //     // return result;
+  //   };
+
+  public getWinners =  () : Winner[] => {
+    const winners: Winner[] = this.players.map((player) => ({
+      id: player.index,
+      name: `${player.name} ${player.isOnline ? "(online)" : ""})`, // this.players.find((user) => user.index === winnerID)?.name ?? "",
+      wins: player.wins,
+    }));
+    return winners.sort((a, b) => Number(a.wins > b.wins));
+  };
+
+  public addWinner =  (winnerID: string) : void=> {
     // let winner: Winner | undefined = this.winners.find(
     //   (user) => user.id === winnerID,
     // );
@@ -186,18 +184,18 @@ export class UsersHandler {
     // this.winners.push(winner);
   };
 
-//   public addPlayerToRoom = async (playerIndex: string, roomId: string) => {
-//     const room = this.rooms.find((room) => room.roomId === roomId);
-//     const player = this.players.find((player) => player.index === playerIndex);
-//     room?.roomUsers.push({
-//       name: player?.name ?? "",
-//       index: player?.index ?? "",
-//     });
+  //   public addPlayerToRoom =   (playerIndex: string, roomId: string) => {
+  //     const room = this.rooms.find((room) => room.roomId === roomId);
+  //     const player = this.players.find((player) => player.index === playerIndex);
+  //     room?.roomUsers.push({
+  //       name: player?.name ?? "",
+  //       index: player?.index ?? "",
+  //     });
 
-//     /**
-//      * isRoomFull
-//      */
-//   };
+  //     /**
+  //      * isRoomFull
+  //      */
+  //   };
   //   [
   //     {
   //         name: string,
@@ -205,28 +203,27 @@ export class UsersHandler {
   //     }
   // ],
 
-//   public isRoomFull = async (roomId: string) => {
-//     return (
-//       this.rooms.find((room) => room.roomId === roomId)?.roomUsers.length === 2
-//     );
-//   };
+  //   public isRoomFull =   (roomId: string) => {
+  //     return (
+  //       this.rooms.find((room) => room.roomId === roomId)?.roomUsers.length === 2
+  //     );
+  //   };
 
-//   public addRoom = async () => {
-//     const newRoom: Room = {
-//       roomId: uuidv4(),
-//       roomUsers: [],
-//     };
-//     this.rooms.push(newRoom);
-//   };
+  //   public addRoom =   () => {
+  //     const newRoom: Room = {
+  //       roomId: uuidv4(),
+  //       roomUsers: [],
+  //     };
+  //     this.rooms.push(newRoom);
+  //   };
 
-//   public getPlayersInRoom = async (roomId: string) => {
-//     const room: Room = this.rooms.find(
-//       (room) => room.roomId === roomId,
-//     ) as Room;
-//     return {
-//       player1: room.roomUsers[0].index,
-//       player2: room.roomUsers[1].index,
-//     };
-//   };
-
+  //   public getPlayersInRoom =   (roomId: string) => {
+  //     const room: Room = this.rooms.find(
+  //       (room) => room.roomId === roomId,
+  //     ) as Room;
+  //     return {
+  //       player1: room.roomUsers[0].index,
+  //       player2: room.roomUsers[1].index,
+  //     };
+  //   };
 }

@@ -29,7 +29,7 @@ export type toServerReg = {
   };
   id: 0;
 };
-////-> to Client to Client
+//// -> to Client to Client
 export type toClientReg = {
   type: "reg";
   data: {
@@ -40,8 +40,8 @@ export type toClientReg = {
   };
   id: 0;
 };
-//Update winners (for all after every winners table update)
-//-> to Client
+// Update winners (for all after every winners table update)
+// -> to Client
 export type UpdatewinnersToClient = {
   type: "update_winners";
   data: [
@@ -52,8 +52,8 @@ export type UpdatewinnersToClient = {
   ];
   id: 0;
 };
-//Room
-//Create new room (create game room and add yourself there)
+// Room
+// Create new room (create game room and add yourself there)
 // <- to Server
 export type CreateNewRoom = {
   type: "create_room";
@@ -61,7 +61,7 @@ export type CreateNewRoom = {
   id: 0;
 };
 
-//Add user to room (add youself to somebodys room, then remove the room from available rooms list)
+// Add user to room (add youself to somebodys room, then remove the room from available rooms list)
 // <- to Server
 export type AddUserToRoom = {
   type: "add_user_to_room";
@@ -70,9 +70,9 @@ export type AddUserToRoom = {
   };
   id: 0;
 };
-//-> to Client
+// -> to Client
 export type CreateGameToClient = {
-  type: "create_game"; //send for both players in the room, after they are connected to the room
+  type: "create_game"; // send for both players in the room, after they are connected to the room
   data: {
     idGame: number | string;
     idPlayer:
@@ -81,8 +81,8 @@ export type CreateGameToClient = {
   };
   id: 0;
 };
-//Update room state (send rooms list, where only one player inside)
-//-> to Client
+// Update room state (send rooms list, where only one player inside)
+// -> to Client
 export type UpdateRoomStateToClient = {
   type: "update_room";
   data: [
@@ -122,8 +122,8 @@ export type AddShipsToTheGameBoard = {
   };
   id: 0;
 };
-//Start game (only after server receives both player's ships positions)\
-//-> to Client
+// Start game (only after server receives both player's ships positions)\
+// -> to Client
 export type StartGameToClient = {
   type: "start_game";
   data: {
@@ -160,8 +160,8 @@ export type AttackToServer = {
   };
   id: 0;
 };
-//Attack feedback (should be sent after every shot, miss and after kill sent miss for all cells around ship too)\
-//-> to Client
+// Attack feedback (should be sent after every shot, miss and after kill sent miss for all cells around ship too)\
+// -> to Client
 export type AttackFeedbackToClient = {
   type: "attack";
   data: {
@@ -176,7 +176,7 @@ export type AttackFeedbackToClient = {
   };
   id: 0;
 };
-//Random attack
+// Random attack
 // <- to Server
 export type RandomAttackToServer = {
   type: "randomAttack";
@@ -188,8 +188,8 @@ export type RandomAttackToServer = {
   };
   id: 0;
 };
-//Info about player's turn (send after game start and every attack, miss or kill result)
-//-> to Client
+// Info about player's turn (send after game start and every attack, miss or kill result)
+// -> to Client
 export type InfoAboutPlayerToClient = {
   type: "turn";
   data: {
@@ -199,8 +199,8 @@ export type InfoAboutPlayerToClient = {
   };
   id: 0;
 };
-//Finish game
-//-> to Client
+// Finish game
+// -> to Client
 export type FinishGame = {
   type: "finish";
   data: {

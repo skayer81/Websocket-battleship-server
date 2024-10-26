@@ -2,11 +2,14 @@
 
 // }
 
+import WebSocket from "ws";
 import { Room, Winner, Ship } from "./types/dataTypes";
 
-import WebSocket from "ws";
-
-export function clientRegistrationSuccest(ws: WebSocket, name: string, index: string) {
+export function clientRegistrationSuccest(
+  ws: WebSocket,
+  name: string,
+  index: string,
+) {
   ws.send(
     JSON.stringify({
       type: "reg",
@@ -21,19 +24,23 @@ export function clientRegistrationSuccest(ws: WebSocket, name: string, index: st
   );
 }
 
-export function clientRegistrationError(ws: WebSocket, name: string, errorText: string){
-    ws.send(
-        JSON.stringify({
-          type: "reg",
-          data: JSON.stringify({
-            name,
-            index: '',
-            error: true,
-            errorText,
-          }),
-          id: 0,
-        }),
-      );
+export function clientRegistrationError(
+  ws: WebSocket,
+  name: string,
+  errorText: string,
+) {
+  ws.send(
+    JSON.stringify({
+      type: "reg",
+      data: JSON.stringify({
+        name,
+        index: "",
+        error: true,
+        errorText,
+      }),
+      id: 0,
+    }),
+  );
 }
 
 export function clientUpdateRoom(ws: WebSocket, rooms: Room[]) {
@@ -115,7 +122,7 @@ export function clientTurn(ws: WebSocket, currentPlayer: string) {
     JSON.stringify({
       type: "turn",
       data: JSON.stringify({
-        //position: { x: data.x, y: data.y },
+        // position: { x: data.x, y: data.y },
         currentPlayer,
         // status: attackstatus ? "shot" : 'miss' // Example status
       }),
@@ -129,7 +136,7 @@ export function clientFinish(ws: WebSocket, winPlayer: string) {
     JSON.stringify({
       type: "finish",
       data: JSON.stringify({
-        //position: { x: data.x, y: data.y },
+        // position: { x: data.x, y: data.y },
         winPlayer,
         // status: attackstatus ? "shot" : 'miss' // Example status
       }),

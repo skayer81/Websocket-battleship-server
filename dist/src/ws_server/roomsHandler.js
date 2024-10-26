@@ -137,41 +137,14 @@ var __generator =
     }
   };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DBHandler = void 0;
+exports.RoomsHandler = void 0;
 var uuid_1 = require("uuid");
-var DBHandler = (function () {
-  function DBHandler() {
+var usersHandler_1 = require("./usersHandler");
+var RoomsHandler = (function () {
+  function RoomsHandler() {
     var _this = this;
-    this.players = [];
+    this.usersHandler = new usersHandler_1.UsersHandler();
     this.rooms = [];
-    this.winners = [];
-    this.isPlayerExist = function (name) {
-      return __awaiter(_this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-          return [
-            2,
-            this.players.find(function (player) {
-              return player.name === name;
-            }),
-          ];
-        });
-      });
-    };
-    this.addPlayer = function (name, password) {
-      return __awaiter(_this, void 0, void 0, function () {
-        var newPlayer;
-        return __generator(this, function (_a) {
-          newPlayer = {
-            name: name,
-            password: password,
-            index: (0, uuid_1.v4)(),
-          };
-          console.log("новый игрок в базе", newPlayer);
-          this.players.push(newPlayer);
-          return [2, newPlayer];
-        });
-      });
-    };
     this.getRooms = function () {
       return __awaiter(_this, void 0, void 0, function () {
         var result;
@@ -191,73 +164,26 @@ var DBHandler = (function () {
         });
       });
     };
-    this.getWinners = function () {
-      return __awaiter(_this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-          return [2, this.winners];
-        });
-      });
-    };
-    this.addWinner = function (winnerID) {
-      return __awaiter(_this, void 0, void 0, function () {
-        var winner;
-        var _a, _b;
-        return __generator(this, function (_c) {
-          winner = this.winners.find(function (user) {
-            return user.id === winnerID;
-          });
-          if (winner) {
-            winner.wins += 1;
-            return [2];
-          }
-          winner = {
-            id: winnerID,
-            name:
-              (_b =
-                (_a = this.players.find(function (user) {
-                  return user.index === winnerID;
-                })) === null || _a === void 0
-                  ? void 0
-                  : _a.name) !== null && _b !== void 0
-                ? _b
-                : "",
-            wins: 1,
-          };
-          this.winners.push(winner);
-          return [2];
-        });
-      });
-    };
     this.addPlayerToRoom = function (playerIndex, roomId) {
       return __awaiter(_this, void 0, void 0, function () {
-        var room, player;
-        var _a, _b;
-        return __generator(this, function (_c) {
-          room = this.rooms.find(function (room) {
-            return room.roomId === roomId;
-          });
-          player = this.players.find(function (player) {
-            return player.index === playerIndex;
-          });
-          room === null || room === void 0
-            ? void 0
-            : room.roomUsers.push({
-                name:
-                  (_a =
-                    player === null || player === void 0
-                      ? void 0
-                      : player.name) !== null && _a !== void 0
-                    ? _a
-                    : "",
-                index:
-                  (_b =
-                    player === null || player === void 0
-                      ? void 0
-                      : player.index) !== null && _b !== void 0
-                    ? _b
-                    : "",
+        var room, playerName;
+        return __generator(this, function (_a) {
+          switch (_a.label) {
+            case 0:
+              room = this.rooms.find(function (room) {
+                return room.roomId === roomId;
               });
-          return [2];
+              return [4, this.usersHandler.getPlayerName(playerIndex)];
+            case 1:
+              playerName = _a.sent();
+              room === null || room === void 0
+                ? void 0
+                : room.roomUsers.push({
+                    name: playerName,
+                    index: playerIndex,
+                  });
+              return [2];
+          }
         });
       });
     };
@@ -285,7 +211,7 @@ var DBHandler = (function () {
             roomUsers: [],
           };
           this.rooms.push(newRoom);
-          return [2];
+          return [2, newRoom.roomId];
         });
       });
     };
@@ -306,13 +232,37 @@ var DBHandler = (function () {
         });
       });
     };
-    if (DBHandler.instance) {
-      return DBHandler.instance;
+    this.isPlayerInRoom = function (playerID) {
+      return __awaiter(_this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+          return [
+            2,
+            this.rooms.some(function (room) {
+              return room.roomUsers.some(function (user) {
+                return user.index === playerID;
+              });
+            }),
+          ];
+        });
+      });
+    };
+    this.delRoom = function (roomId) {
+      return __awaiter(_this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+          this.rooms = this.rooms.filter(function (room) {
+            return room.roomId !== roomId;
+          });
+          return [2];
+        });
+      });
+    };
+    if (RoomsHandler.instance) {
+      return RoomsHandler.instance;
     }
-    DBHandler.instance = this;
+    RoomsHandler.instance = this;
   }
-  DBHandler.instance = null;
-  return DBHandler;
+  RoomsHandler.instance = null;
+  return RoomsHandler;
 })();
-exports.DBHandler = DBHandler;
-//# sourceMappingURL=dataBaseHandler.js.map
+exports.RoomsHandler = RoomsHandler;
+//# sourceMappingURL=roomsHandler.js.map

@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from "uuid";
 import { UsersHandler } from "./usersHandler";
-//import { User, PartialUser } from "src/types";
+// import { User, PartialUser } from "src/types";
 
-//import
+// import
 
 interface PlayerInRoom {
   name: string;
@@ -38,18 +38,18 @@ interface Room {
 //   indexPlayer: string /* id of the player in the current game session */;
 // }
 
-//const players: Player[] = [];
-//const rooms: Room[] = [];
+// const players: Player[] = [];
+// const rooms: Room[] = [];
 
 export class RoomsHandler {
   private static instance: RoomsHandler | null = null;
 
-  private usersHandler = new UsersHandler()
+  private usersHandler = new UsersHandler();
 
- // private players: Player[] = [];
+  // private players: Player[] = [];
   private rooms: Room[] = [];
- // private winners: Winner[] = [];
-  //rivate games : Game[] = []
+  // private winners: Winner[] = [];
+  // rivate games : Game[] = []
 
   constructor() {
     if (RoomsHandler.instance) {
@@ -59,11 +59,11 @@ export class RoomsHandler {
     RoomsHandler.instance = this;
   }
 
-  // public isPlayerExist = async (name: string) => {
+  // public isPlayerExist =   (name: string) => {
   //   return this.players.find((player) => player.name === name);
   // };
 
-  // public addPlayer = async (
+  // public addPlayer =   (
   //   name: string,
   //   password: string,
   // ): Promise<Player> => {
@@ -77,7 +77,7 @@ export class RoomsHandler {
   //   return newPlayer;
   // };
 
-  public getRooms = async () => {
+  public getRooms =  () : Room[] => {
     const result = this.rooms.map((room) => ({
       roomId: room.roomId,
       roomUsers: room.roomUsers.map((player) => ({
@@ -89,11 +89,11 @@ export class RoomsHandler {
     // return result;
   };
 
-  // public getWinners = async () => {
+  // public getWinners =   () => {
   //   return this.winners;
   // };
 
-  // public addWinner = async (winnerID: string) => {
+  // public addWinner =   (winnerID: string) => {
   //   let winner: Winner | undefined = this.winners.find(
   //     (user) => user.id === winnerID,
   //   );
@@ -109,9 +109,9 @@ export class RoomsHandler {
   //   this.winners.push(winner);
   // };
 
-  public addPlayerToRoom = async (playerIndex: string, roomId: string) => {
+  public addPlayerToRoom =   (playerIndex: string, roomId: string) : void=> {
     const room = this.rooms.find((room) => room.roomId === roomId);
-    const playerName = await this.usersHandler.getPlayerName(playerIndex) //= this.players.find((player) => player.index === playerIndex);
+    const playerName =   this.usersHandler.getPlayerName(playerIndex); // = this.players.find((player) => player.index === playerIndex);
     room?.roomUsers.push({
       name: playerName,
       index: playerIndex,
@@ -128,22 +128,19 @@ export class RoomsHandler {
   //     }
   // ],
 
-  public isRoomFull = async (roomId: string) => {
-    return (
-      this.rooms.find((room) => room.roomId === roomId)?.roomUsers.length === 2
-    );
-  };
+  public isRoomFull =  (roomId: string) : boolean=>
+    this.rooms.find((room) => room.roomId === roomId)?.roomUsers.length === 2;
 
-  public addRoom = async () => {
+  public addRoom =  () : string => {
     const newRoom: Room = {
       roomId: uuidv4(),
       roomUsers: [],
     };
     this.rooms.push(newRoom);
-    return newRoom.roomId
+    return newRoom.roomId;
   };
 
-  public getPlayersInRoom = async (roomId: string) => {
+  public getPlayersInRoom =  (roomId: string) : {player1: string, player2: string} => {
     const room: Room = this.rooms.find(
       (room) => room.roomId === roomId,
     ) as Room;
@@ -153,15 +150,13 @@ export class RoomsHandler {
     };
   };
 
-  public isPlayerInRoom = async (playerID: string): Promise<boolean> => {
-   // return Boolean(this.rooms.find(room => room.roomUsers.find(user => user.index === playerID)))
-   return this.rooms.some(room => 
-    room.roomUsers.some(user => user.index === playerID)
-);
-  }
+  public isPlayerInRoom  = (playerID: string): boolean =>
+    // return Boolean(this.rooms.find(room => room.roomUsers.find(user => user.index === playerID)))
+    this.rooms.some((room) =>
+      room.roomUsers.some((user) => user.index === playerID),
+    );
 
-  public delRoom = async (roomId: string): Promise<void> => {
-    this.rooms = this.rooms.filter(room => room.roomId !== roomId);
-  }
-
+  public delRoom =  (roomId: string): void => {
+    this.rooms = this.rooms.filter((room) => room.roomId !== roomId);
+  };
 }
