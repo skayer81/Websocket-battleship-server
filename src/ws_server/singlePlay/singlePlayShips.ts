@@ -27,12 +27,11 @@ export class SinglPlayShips {
 
   private ships: Ship[];
 
-  private readonly fieldSize: number;
+  private readonly fieldSize = 10;
 
-  constructor(fieldSize: number = 10) {
-    this.fieldSize = fieldSize;
-    this.field = Array.from({ length: fieldSize }, () =>
-      Array(fieldSize).fill(0),
+  constructor() {
+    this.field = Array.from({ length: this.fieldSize }, () =>
+      Array(this.fieldSize).fill(0),
     );
     this.ships = [];
   }
@@ -170,9 +169,13 @@ export class SinglPlayShips {
   }
 
   public getShips(): Ship[] {
+    this.ships = []
+    this.field = Array.from({ length: this.fieldSize }, () =>
+      Array(this.fieldSize).fill(0),
+    );
     this.randomizeShips();
-    this.printField();
-    console.log(this.ships);
+   // this.printField();
+    //console.log(this.ships);
     return this.ships;
   }
 }

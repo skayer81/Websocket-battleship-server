@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 // import { User, PartialUser } from "src/types";
 
 // import
@@ -51,7 +50,11 @@ interface Winner {
 export class UsersHandler {
   private static instance: UsersHandler | null = null;
 
-  private players: Player[] = [];
+  private players: Player[] = [    { name: "Alice", index: "1", password: "pass1", wins: 5, isOnline: true },
+    { name: "Bob", index: "2", password: "pass2", wins: 3, isOnline: false },
+    { name: "Charlie", index: "3", password: "pass3", wins: 5, isOnline: false },
+    { name: "David", index: "4", password: "pass4", wins: 3, isOnline: true },
+    { name: "Eve", index: "5", password: "pass5", wins: 5, isOnline: true }];
   //   private rooms: Room[] = [];
   //   private winners: Winner[] = [];
   // rivate games : Game[] = []
@@ -134,7 +137,7 @@ export class UsersHandler {
     const newPlayer = {
       name,
       password,
-      index: uuidv4(),
+      index: crypto.randomUUID(),
       wins: 0,
       isOnline: false,
     };
@@ -159,16 +162,32 @@ export class UsersHandler {
   //     // return result;
   //   };
 
+
+  private sortPlayers(players: Player[]): Player[] {
+    return players.sort((a, b) => {
+        if (b.wins !== a.wins) {
+            return b.wins - a.wins; 
+        }
+        if (a.isOnline !== b.isOnline) {
+            return a.isOnline ? -1 : 1; 
+        }
+        return a.name.localeCompare(b.name);
+    });
+}
+
+
   public getWinners =  () : Winner[] => {
-    const winners: Winner[] = this.players.map((player) => ({
+    const winners: Winner[] = this.sortPlayers(this.players).map((player) => ({
       id: player.index,
-      name: `${player.name} ${player.isOnline ? "(online)" : ""})`, // this.players.find((user) => user.index === winnerID)?.name ?? "",
+      name: `${player.name} ${player.isOnline ? "(online)" : ""}`, // this.players.find((user) => user.index === winnerID)?.name ?? "",
       wins: player.wins,
     }));
     return winners.sort((a, b) => Number(a.wins > b.wins));
   };
 
   public addWinner =  (winnerID: string) : void=> {
+    let user = this.getPlayerByID(winnerID)
+    user.wins += 1;
     // let winner: Winner | undefined = this.winners.find(
     //   (user) => user.id === winnerID,
     // );

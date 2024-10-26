@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import { UsersHandler } from "./usersHandler";
 // import { User, PartialUser } from "src/types";
 
@@ -133,7 +132,7 @@ export class RoomsHandler {
 
   public addRoom =  () : string => {
     const newRoom: Room = {
-      roomId: uuidv4(),
+      roomId: crypto.randomUUID(),
       roomUsers: [],
     };
     this.rooms.push(newRoom);

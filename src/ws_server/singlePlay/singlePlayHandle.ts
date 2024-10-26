@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import WebSocket from "ws";
 // import { WebSoketHandler } from "../webSoketHandler"; //; = require("ws");
 import {
@@ -14,17 +13,21 @@ import {
 import { Ship, Player, Game, SingleGame, Bot } from "../types/gameTypes";
 import { GamesHandler } from "../gamesHandler";
 import { SinglPlayShips } from "./singlePlayShips";
+import { UsersHandler } from "../usersHandler";
 
 export class SinglePlayHandler extends GamesHandler {
   private singleGames: SingleGame[] = [];
 
   private singlPlayShips = new SinglPlayShips();
 
-  private bot_delay = 1000;
+  //private usersHandler = new UsersHandler()
+
+  private bot_delay = 0;
 
   public addSingleGame =   (ws: WebSocket): void => {
+    console.log('запустили addSingleGame')
     const game: SingleGame = {
-      gameId: uuidv4(),
+      gameId: crypto.randomUUID(),
       player: {
         indexPlayer: this.webSoketHandler.getPlayerIDByWS(ws),
         ships: [],
@@ -107,7 +110,8 @@ export class SinglePlayHandler extends GamesHandler {
   private   botAttackAction(gameId: string) : void {
     const game = this.singleGames.find((game) => game.gameId === gameId);
     if (!game) {
-      throw new Error(",kf,kf,kf");
+      return
+      //throw new Error(",kf,kf,kf");
     }
 
     const { x, y } = this.getRandomShot(game?.bot);
@@ -158,6 +162,10 @@ export class SinglePlayHandler extends GamesHandler {
       return;
     }
     if (game.player.shots.has(`${x},${y}`)) {
+      clientTurn(
+        game.player.ws,
+        game.isCurrentPlayer ? game.player.indexPlayer : game.bot.indexPlayer,
+      )
       return;
     }
     // const player = game?.currentPlayer === game.players
@@ -182,16 +190,22 @@ export class SinglePlayHandler extends GamesHandler {
       this.shipKilled(game, attackResult.ship);
     }
 
+    // if (this.isAllShipIsKill(game.bot.ships)) {
+    //   return
+
+    // }
+
     if (attackResult.status === "miss") {
       game.isCurrentPlayer = false;
       setTimeout(() => {
         this.botAttackAction(gameId);
       }, this.bot_delay);
     }
+    if (game) {
     clientTurn(
       game.player.ws,
       game.isCurrentPlayer ? game.player.indexPlayer : game.bot.indexPlayer,
-    );
+    );}
   };
 
   private isAllShipIsKill(ships: Ship[]) : boolean {
@@ -204,19 +218,27 @@ export class SinglePlayHandler extends GamesHandler {
     const otherPlayerShips = game.isCurrentPlayer
       ? game.bot.ships
       : game.player.ships;
-    if (this.isAllShipIsKill(otherPlayerShips)) {
+    //if (this.isAllShipIsKill(otherPlayerShips)) {
       clientFinish(
         game.player.ws,
         game.isCurrentPlayer ? game.player.indexPlayer : game.bot.indexPlayer,
       );
+
+   
       if (game.isCurrentPlayer) {
-        //// //////////////////// добавить победу
-        // this.
+         this.usersHandler.addWinner(game.player.indexPlayer)
       }
-      this.webSoketHandler.getAllWS().forEach(  (ws) => {
-        //// ///////////////обновить виннеров clientUpdateWinners
-      });
-    }
+      const winners = this.usersHandler.getWinners()
+     this.webSoketHandler.getAllWS().forEach(  (ws) => {
+        clientUpdateWinners(ws.ws,winners )
+        // ///////////////обновить виннеров clientUpdateWinners
+     });
+     this.deleteSingleGame(game);
+   // }
+  }
+
+  private deleteSingleGame(game: SingleGame): void {
+    this.singleGames = this.singleGames.filter((element) => element !== game);
   }
 
   private missesAroundShipSinglePlay(game: SingleGame, ship: Ship) : void{

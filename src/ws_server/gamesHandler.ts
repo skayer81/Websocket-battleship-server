@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import { WebSoketHandler } from "./webSoketHandler"; // ; = require("ws");
 import {
   clientCreateGame,
@@ -11,6 +10,7 @@ import {
 
 import { RoomsHandler } from "./roomsHandler";
 import { Ship, Player, Game, AttackResult } from "./types/gameTypes";
+import { UsersHandler } from "./usersHandler";
 
 // const players: Player[] = [];
 // const rooms: Room[] = [];
@@ -23,7 +23,9 @@ export class GamesHandler {
   // private winners : Winner[] = [];
   protected webSoketHandler = new WebSoketHandler();
 
-  private roomsHandler = new RoomsHandler();
+ // private roomsHandler = new RoomsHandler();
+
+  protected usersHandler = new UsersHandler()
 
   private games: Game[] = [];
 
@@ -130,7 +132,7 @@ export class GamesHandler {
     const player2 = this.createPlayer(player2ID);
     const currentPlayer = Math.random() > 0.5 ? player1 : player2;
     const game: Game = {
-      gameId: uuidv4(),
+      gameId: crypto.randomUUID(),
       players: [player1, player2],
       currentPlayer,
       //         {
@@ -312,13 +314,38 @@ export class GamesHandler {
         // this.webSoketHandler.addWebSoket(ws, newPlayer.index)
         //  clientRegistration(ws, name, newPlayer.index);
 
+
+
+
+
+       
+          this.usersHandler.addWinner(game.currentPlayer.indexPlayer)
+       
+       const winners = this.usersHandler.getWinners()
+       this.webSoketHandler.getAllWS().forEach(  (ws) => {
+          clientUpdateWinners(ws.ws,winners )
+         // ///////////////обновить виннеров clientUpdateWinners
+      });
+      this.deleteGame(game);
+
+
+
+
+
+
+
+
+
+
+
+
         //    this.dbHandler.addWinner(game.currentPlayer.indexPlayer);
         // const winners =   this.dbHandler.getWinners();
 
-        this.webSoketHandler.getAllWS().forEach(  (ws) => {
-          //  clientUpdateRoom(ws.ws,   this.dbHandler.getRooms());
-          //     clientUpdateWinners(ws.ws, winners);
-        });
+        // this.webSoketHandler.getAllWS().forEach(  (ws) => {
+        //   //  clientUpdateRoom(ws.ws,   this.dbHandler.getRooms());
+        //      clientUpdateWinners(ws.ws, thi);
+        // });
         // this.webSoketHandler.getAllWS.
         // clientUpdateWinners(ws.ws,   this.dbHandler.getWinners())
       }
@@ -506,6 +533,10 @@ export class GamesHandler {
       }
     }
     return null; // Не попали
+  }
+
+  private deleteGame(game: Game): void {
+    this.games = this.games.filter((element) => element !== game);
   }
 
   //   public getAttackResult =   (gameId: string, indexPlayer: string, x: number , y: number) => {
