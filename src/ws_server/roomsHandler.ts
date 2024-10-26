@@ -158,4 +158,8 @@ export class RoomsHandler {
   public delRoom =  (roomId: string): void => {
     this.rooms = this.rooms.filter((room) => room.roomId !== roomId);
   };
+
+  public playerOffline = (playerID: string): void => {
+    this.rooms = this.rooms.filter((room) => room.roomUsers[0].index  !== playerID);
+  }
 }

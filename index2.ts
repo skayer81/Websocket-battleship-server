@@ -1,4 +1,4 @@
-import { httpServer } from "./src/http_server/index.mjs";
+import { httpServer } from "./src/http_server/index.js";
 // import { wsserver , test } from "./src/ws_server/index";
 //import ws from "./src/ws_server/testServer"
 

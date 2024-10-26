@@ -10,6 +10,7 @@
     "test2": "echo \"Error: no test specified\" && exit 1",
     "start:dev": "npx ts-node-dev ./src/ws_server/testServer.ts",
     "sd": "npx ts-node-dev ./src/ws_server/index.ts",
+    "sd2": "npx ts-node-dev ./index.ts",
     "startFS": "./index.js",
     "start:prod": "webpack && node dist/bundle.js --NODE_ENV=production",
     "test": "jest",

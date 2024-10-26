@@ -53,9 +53,20 @@ export class WebSoketHandler {
     // });
     const playerID = this.wsList.find((item) => item.ws === ws)?.playerID;
     if (!playerID) {
-      throw new Error();
+      throw new Error('playerID in WebSoketHandler is not found');
     }
     return playerID;
+  }
+
+  public isPlayerInWS(ws: WebSocket) : boolean {
+    // this.wsList.forEach((item) => {
+    //   // console.log("ид в базе сокетов", item.playerID);
+    // });
+    const playerID = this.wsList.find((item) => item.ws === ws)?.playerID;
+    if (!playerID) {
+      return false
+    }
+    return true;
   }
 
   public getAllWS() : WSListItem[] {

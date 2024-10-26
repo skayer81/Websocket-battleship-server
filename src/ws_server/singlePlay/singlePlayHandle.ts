@@ -271,4 +271,18 @@ export class SinglePlayHandler extends GamesHandler {
     position[lengthCoordinate] = ship.position[lengthCoordinate] + ship.length;
     sendMiss();
   }
+  public playerOffline(playerID: string): void{
+    const game = this.singleGames.find(game => game.player.indexPlayer === playerID);
+    if (!game){
+      return
+    }
+    //const player = game.players[0].indexPlayer === playerID ? game.players[1] : game.players[0];
+   // clientFinish(otherPlayer.ws, otherPlayer.indexPlayer);
+    // this.webSoketHandler.addWebSoket(ws, newPlayer.index)
+    //  clientRegistration(ws, name, newPlayer.index);Y
+     // this.setWinAndcloseGame(game)
+     this.deleteSingleGame(game);
+
+
+  }
 }

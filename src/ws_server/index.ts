@@ -1,33 +1,14 @@
-// /вынести логику игры в отдельный модуль 24.10  ++++++++++++++++++++++++
-// добавить текущего игрока. вебсокеты?? 24.10    ++++++++++++++++++++++++
-// проверка на то что игрок уже есть/логин 25.10   +++++++++++++++++++++++
-// определить победу - 24.10  ++++++++++++++++++++++++++++++++++++++++++++
-// бот для соло игры                        ++++++++++++++++++++++++++++++
-// разобраться с сервером клиента
-// автовыстрелы           ++++++++++++++++++++++++++++++++++++++++++++++++
-// заблочить стрельбу по подбитым кораблям   +++++++++++++++++++++++++++++
-// уьрать комнату при старте игры 25.10           ++++++++++++++++++++++++
-// автодобавление игрока в комнату                             +++++++++++
-// заблочить вход в комнату если игрок в комнате 25.10       +++++++++++++
-// протестить несколько игр сразу                         ++++++++++++++++
-// удалить сокет из массива при закрытии 25.10            ++++++++++++++++
-// баг с первым ходом                 ++++++++++++++++++++++++++++++++++++
-// баг с добавлением в сет ходов клеток вокруг корабля +++++++++++++++++++
-// баг с автострельбой                      ++++++++++++++++++++++++++++++
+// разобраться с сервером клиента                      +++++++++++++++++++
 // добавить логирование действий сервера
 // типизация событий
-// убрать UUID                             +++++++++++++++++++++++++++++++
-// что делать с игроком когда он в игре но разлогинился? -----------
-// какая то херня с началом новой игры после завершения старой++++++++++++
-// добавить после игры обновление статистика. и в сингл и в мульти++++++++
-
+// что делать с игроком когда он в игре но разлогинился? ++++++++++++++++++
+//автовыстрелы в соло игре?? проетстировать
 import WebSocket, { WebSocketServer } from "ws";
 import { ServerActionHandlers } from "./serverActionHandlers";
 import { WebSoketHandler } from "./webSoketHandler";
 // import { SinglPlayField} from './singlePlay/singlePlayShips';
 
-const WS_HOSTNAME = "localhost";
-const WS_HTTP_PORT = 3000;
+
 // const wss = new WebSocketServer({
 //  host: WS_HOSTNAME,
 //  port: WS_HTTP_PORT,
@@ -38,9 +19,11 @@ const WS_HTTP_PORT = 3000;
 // }
 
 export class WSServer {
+   WS_HOSTNAME = "localhost";
+ WS_HTTP_PORT = 3000;
   wss = new WebSocketServer({
-    host: WS_HOSTNAME,
-    port: WS_HTTP_PORT,
+    host: this.WS_HOSTNAME,
+    port: this.WS_HTTP_PORT,
   });
 
   serverActionHandlers = new ServerActionHandlers();
@@ -55,7 +38,7 @@ export class WSServer {
   //   }
 
   runServer = () => {
-    console.log(`WebSocket server is running on //localhost:${WS_HTTP_PORT}`);
+    console.log(`WebSocket server is running on //localhost:${this.WS_HTTP_PORT}`);
     this.wss.on("connection", (ws) => {
       this.clientConnection(ws);
     });
@@ -109,8 +92,8 @@ export class WSServer {
   };
 }
 
-export const wsserver = new WSServer();
-wsserver.runServer();
+//export const wsserver = new WSServer();
+//wsserver.runServer();
 
 // export function test(){
 // wss.on('connection', (ws) => {

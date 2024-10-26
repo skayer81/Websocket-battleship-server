@@ -158,16 +158,36 @@ export class ServerActionHandlers {
   };
 
   public closeWebSoket =   (ws: WebSocket) : void => {
-    const playerID = this.webSoketHandler.getPlayerIDByWS(ws);
-      this.usersHandler.setOnlineStatus(playerID, false);
-    this.webSoketHandler.delWebSoket(ws);
-    this.webSoketHandler.getAllWS().forEach(  (ws) => {
+  //   ws.send(JSON.stringify(
+  //   {
+  //     type: "diconnect",
+  //     data: "",
+  //     id: 0,
+  //   })
+  // )
+    if (!this.webSoketHandler.isPlayerInWS(ws)){
+      this.webSoketHandler.delWebSoket(ws);
+      return
+    }
+
+     const playerID = this.webSoketHandler.getPlayerIDByWS(ws);
+     this.usersHandler.setOnlineStatus(playerID, false);
+
+     this.roomsHandler.playerOffline(playerID);
+     this.gamesHandler.playerOffline(playerID);
+     this.singlePlayHandler.playerOffline(playerID);
+     this.webSoketHandler.getAllWS().forEach(  (ws) => {
       clientUpdateRoom(ws.ws,   this.roomsHandler.getRooms());
       clientUpdateWinners(ws.ws,   this.usersHandler.getWinners());
     });
   };
 
   public handleSinglePlay =   (ws: WebSocket) : void => {
-      this.singlePlayHandler.addSingleGame(ws);
+    this.roomsHandler.playerOffline(this.webSoketHandler.getPlayerIDByWS(ws));
+    this.singlePlayHandler.addSingleGame(ws);
+    this.webSoketHandler.getAllWS().forEach(  (ws) => {
+      clientUpdateRoom(ws.ws,   this.roomsHandler.getRooms());
+    //  clientUpdateWinners(ws.ws,   this.usersHandler.getWinners());
+    });
   };
 }

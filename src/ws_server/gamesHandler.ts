@@ -317,16 +317,16 @@ export class GamesHandler {
 
 
 
-
+        this.setWinAndcloseGame(game)
        
-          this.usersHandler.addWinner(game.currentPlayer.indexPlayer)
+      //     this.usersHandler.addWinner(game.currentPlayer.indexPlayer)
        
-       const winners = this.usersHandler.getWinners()
-       this.webSoketHandler.getAllWS().forEach(  (ws) => {
-          clientUpdateWinners(ws.ws,winners )
-         // ///////////////обновить виннеров clientUpdateWinners
-      });
-      this.deleteGame(game);
+      //  const winners = this.usersHandler.getWinners()
+      //  this.webSoketHandler.getAllWS().forEach(  (ws) => {
+      //     clientUpdateWinners(ws.ws,winners )
+      //    // ///////////////обновить виннеров clientUpdateWinners
+      // });
+      // this.deleteGame(game);
 
 
 
@@ -364,6 +364,19 @@ export class GamesHandler {
     // game.currentPlayer.shoots.add
     //  clientTurn(ws2, this.test)
   };
+
+  protected setWinAndcloseGame(game: Game
+  ){
+           
+    this.usersHandler.addWinner(game.currentPlayer.indexPlayer)
+       
+    const winners = this.usersHandler.getWinners()
+    this.webSoketHandler.getAllWS().forEach(  (ws) => {
+       clientUpdateWinners(ws.ws,winners )
+      // ///////////////обновить виннеров clientUpdateWinners
+   });
+   this.deleteGame(game);
+  }
 
   public randomAttack =   (gameId: string, playerIndex: string) => {
     const game = this.games.find((game) => game.gameId === gameId) as Game;
@@ -537,6 +550,20 @@ export class GamesHandler {
 
   private deleteGame(game: Game): void {
     this.games = this.games.filter((element) => element !== game);
+  }
+
+  public playerOffline(playerID: string): void{
+    const game = this.games.find(game => game.players[0].indexPlayer === playerID || game.players[1].indexPlayer === playerID);
+    if (!game){
+      return
+    }
+    const otherPlayer = game.players[0].indexPlayer === playerID ? game.players[1] : game.players[0];
+    clientFinish(otherPlayer.ws, otherPlayer.indexPlayer);
+    // this.webSoketHandler.addWebSoket(ws, newPlayer.index)
+    //  clientRegistration(ws, name, newPlayer.index);Y
+    this.setWinAndcloseGame(game)
+
+
   }
 
   //   public getAttackResult =   (gameId: string, indexPlayer: string, x: number , y: number) => {
