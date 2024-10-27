@@ -11,16 +11,6 @@ interface Ship {
   shots: boolean[];
 }
 
-// export interface Ship {
-//     position: {
-//       x: number;
-//       y: number;
-//     };
-//     direction: boolean;
-//     length: number;
-//     type: "small" | "medium" | "large" | "huge";
-//     shots: boolean[];
-//   }
 
 export class SinglPlayShips {
   private field: number[][];
@@ -43,7 +33,7 @@ export class SinglPlayShips {
       if (x + ship.length > this.fieldSize) {
         return false;
       }
-      for (let i = 0; i < ship.length; i+=1) {
+      for (let i = 0; i < ship.length; i += 1) {
         if (this.field[y][x + i] !== 0) {
           return false;
         }
@@ -52,7 +42,7 @@ export class SinglPlayShips {
       if (y + ship.length > this.fieldSize) {
         return false;
       }
-      for (let i = 0; i < ship.length; i+=1) {
+      for (let i = 0; i < ship.length; i += 1) {
         if (this.field[y + i][x] !== 0) {
           return false;
         }
@@ -70,7 +60,7 @@ export class SinglPlayShips {
       { dx: 1, dy: 1 },
     ];
 
-    for (let i = 0; i < ship.length; i+=1) {
+    for (let i = 0; i < ship.length; i += 1) {
       const checkX = !ship.direction ? x + i : x;
       const checkY = !ship.direction ? y : y + i;
 
@@ -93,11 +83,11 @@ export class SinglPlayShips {
     const { x, y } = ship.position;
 
     if (!ship.direction) {
-      for (let i = 0; i < ship.length; i+=1) {
+      for (let i = 0; i < ship.length; i += 1) {
         this.field[y][x + i] = 1;
       }
     } else {
-      for (let i = 0; i < ship.length; i+=1) {
+      for (let i = 0; i < ship.length; i += 1) {
         this.field[y + i][x] = 1;
       }
     }
@@ -145,7 +135,7 @@ export class SinglPlayShips {
     };
 
     for (const shipType of shipConfigurations) {
-      for (let count = 0; count < shipCounts[shipType.type]; count+=1) {
+      for (let count = 0; count < shipCounts[shipType.type]; count += 1) {
         let placed = false;
 
         while (!placed) {
@@ -169,13 +159,11 @@ export class SinglPlayShips {
   }
 
   public getShips(): Ship[] {
-    this.ships = []
+    this.ships = [];
     this.field = Array.from({ length: this.fieldSize }, () =>
       Array(this.fieldSize).fill(0),
     );
     this.randomizeShips();
-   // this.printField();
-    //console.log(this.ships);
     return this.ships;
   }
 }

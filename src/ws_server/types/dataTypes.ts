@@ -35,3 +35,4 @@ export interface Game {
 
   indexPlayer: string /* id of the player in the current game session */;
 }
+

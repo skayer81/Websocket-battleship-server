@@ -5,6 +5,8 @@
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/recommended-requiring-type-checking",
     "plugin:import/recommended",
+    "plugin:import/errors",
+    "plugin:import/warnings",
     // "airbnb-base",
     // "airbnb-typescript/base",
     "prettier"
@@ -13,6 +15,11 @@
   "parserOptions": { "ecmaVersion": "latest", "project": true, "sourceType": "module", "tsconfigRootDir": "/"},
   "plugins": ["jest", "@typescript-eslint"],
   "root": true,
+  "settings": {
+    "import/resolver": {
+      "typescript": {} // Это позволяет ESLint использовать tsconfig
+    }
+  },
   "rules": {
     "@typescript-eslint/array-type": "error",
     "@typescript-eslint/explicit-function-return-type": "error",

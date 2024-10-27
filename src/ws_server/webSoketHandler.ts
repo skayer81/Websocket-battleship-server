@@ -18,7 +18,7 @@ export class WebSoketHandler {
     WebSoketHandler.instance = this;
   }
 
-  public addWebSoket(ws: WebSocket, playerID = "") : void {
+  public addWebSoket(ws: WebSocket, playerID = ""): void {
     const wsListItem = {
       ws,
       playerID,
@@ -26,20 +26,11 @@ export class WebSoketHandler {
     this.wsList.push(wsListItem);
   }
 
-  public delWebSoket(ws: WebSocket) : void {
+  public delWebSoket(ws: WebSocket): void {
     this.wsList = this.wsList.filter((element) => element.ws !== ws);
   }
 
-  //   function removeElement(arr, value) {
-  //     return arr.filter(element => element !== value);
-  // }
-
-  // // Пример использования
-  // const originalArray = [1, 2, 3, 4, 5];
-  // const newArray = removeElement(originalArray, 3);
-  // console.log(newArray); // Вывод: [1, 2, 4, 5]
-
-  public getWSByPlayerID(playerID: string) : WebSocket {
+  public getWSByPlayerID(playerID: string): WebSocket {
     const ws = this.wsList.find((item) => item.playerID === playerID);
     if (!ws) {
       throw new Error();
@@ -47,29 +38,23 @@ export class WebSoketHandler {
     return ws.ws;
   }
 
-  public getPlayerIDByWS(ws: WebSocket) : string {
-    // this.wsList.forEach((item) => {
-    //   // console.log("ид в базе сокетов", item.playerID);
-    // });
+  public getPlayerIDByWS(ws: WebSocket): string {
     const playerID = this.wsList.find((item) => item.ws === ws)?.playerID;
     if (!playerID) {
-      throw new Error('playerID in WebSoketHandler is not found');
+      throw new Error("playerID in WebSoketHandler is not found");
     }
     return playerID;
   }
 
-  public isPlayerInWS(ws: WebSocket) : boolean {
-    // this.wsList.forEach((item) => {
-    //   // console.log("ид в базе сокетов", item.playerID);
-    // });
+  public isPlayerInWS(ws: WebSocket): boolean {
     const playerID = this.wsList.find((item) => item.ws === ws)?.playerID;
     if (!playerID) {
-      return false
+      return false;
     }
     return true;
   }
 
-  public getAllWS() : WSListItem[] {
+  public getAllWS(): WSListItem[] {
     return this.wsList;
   }
 }

@@ -1,22 +1,24 @@
-export enum TypesServerAction {
-  "reg",
-  "create_room",
-  "add_user_to_room",
-  "add_ships",
-  "attack",
-  "randomAttack",
+export enum TypesClientRequest {
+  reg = "reg",
+  create_room = "create_room",
+  add_user_to_room = "add_user_to_room",
+  add_ships = "add_ships",
+  attack = "attack",
+  randomAttack = "randomAttack",
+  single_play ="single_play",
 }
 
-export enum TypesClientAction {
-  "reg",
-  "update_winners",
-  "create_game",
-  "update_room",
-  "start_game",
-  "attack",
-  "turn",
-  "finish",
+export enum  TypesServerResponse{
+  reg = "reg",
+  update_winners = "update_winners",
+  create_game = "create_game",
+  update_room = "update_room",
+  start_game = "start_game",
+  attack = "attack",
+  turn = "turn",
+  finish = "finish",
 }
+
 
 // Player
 // Login or create player

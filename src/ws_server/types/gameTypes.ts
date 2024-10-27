@@ -39,6 +39,6 @@ export interface SingleGame {
 }
 
 export interface AttackResult {
-   status: string,
-    ship: Ship | null 
+  status: string;
+  ship: Ship | null;
 }
