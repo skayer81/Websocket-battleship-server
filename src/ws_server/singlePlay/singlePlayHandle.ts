@@ -77,7 +77,7 @@ export class SinglePlayHandler extends GamesHandler {
   public startSingleGame = (gameId: string): void => {
     const game = this.singleGames.find((game) => game.gameId === gameId);
     if (!game) {
-      throw new Error();
+      throw new Error("single game is not found");
     }
     clientStartGame(game.player.ws, game.player.ships, game.player.indexPlayer);
     clientTurn(
@@ -109,7 +109,7 @@ export class SinglePlayHandler extends GamesHandler {
     // console.log("бот атакует", attackResult.status);
     if (attackResult.status === "killed") {
       if (!attackResult.ship) {
-        throw new Error("корабль пустой");
+        throw new Error("ship is empty");
       }
       this.shipKilled(game, attackResult.ship);
     }
@@ -140,8 +140,8 @@ export class SinglePlayHandler extends GamesHandler {
 
     if (!game.isCurrentPlayer) {
       this.consoleLog.serverAction(TypesServerAction.not_current_player, {
-        player1: player,
-        player2: "bot",
+        player1: "bot",
+        player2: player,
       });
 
       return;
@@ -176,7 +176,7 @@ export class SinglePlayHandler extends GamesHandler {
     // console.log("игрок атакует ", attackResult);
     if (attackResult.status === "killed") {
       if (!attackResult.ship) {
-        throw new Error("корабль пустой");
+        throw new Error("ship is not found");
       }
       this.shipKilled(game, attackResult.ship);
     }
@@ -192,7 +192,7 @@ export class SinglePlayHandler extends GamesHandler {
         this.botAttackAction(gameId);
       }, this.bot_delay);
     }
-    if (game) {
+    if (this.singleGames.includes(game)) {
       clientTurn(
         game.player.ws,
         game.isCurrentPlayer ? game.player.indexPlayer : game.bot.indexPlayer,
@@ -287,7 +287,7 @@ export class SinglePlayHandler extends GamesHandler {
 
     const { x, y } = this.getRandomShot(game.player);
     this.consoleLog.serverAction(TypesServerAction.random_attack, {
-      targetPlayer: game.player.indexPlayer,
+      targetPlayer: this.usersHandler.getPlayerName(game.player.indexPlayer),
       x,
       y,
     });

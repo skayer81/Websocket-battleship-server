@@ -1,141 +1,4 @@
 "use strict";
-var __awaiter =
-  (this && this.__awaiter) ||
-  function (thisArg, _arguments, P, generator) {
-    function adopt(value) {
-      return value instanceof P
-        ? value
-        : new P(function (resolve) {
-            resolve(value);
-          });
-    }
-    return new (P || (P = Promise))(function (resolve, reject) {
-      function fulfilled(value) {
-        try {
-          step(generator.next(value));
-        } catch (e) {
-          reject(e);
-        }
-      }
-      function rejected(value) {
-        try {
-          step(generator["throw"](value));
-        } catch (e) {
-          reject(e);
-        }
-      }
-      function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
-      }
-      step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-  };
-var __generator =
-  (this && this.__generator) ||
-  function (thisArg, body) {
-    var _ = {
-        label: 0,
-        sent: function () {
-          if (t[0] & 1) throw t[1];
-          return t[1];
-        },
-        trys: [],
-        ops: [],
-      },
-      f,
-      y,
-      t,
-      g = Object.create(
-        (typeof Iterator === "function" ? Iterator : Object).prototype,
-      );
-    return (
-      (g.next = verb(0)),
-      (g["throw"] = verb(1)),
-      (g["return"] = verb(2)),
-      typeof Symbol === "function" &&
-        (g[Symbol.iterator] = function () {
-          return this;
-        }),
-      g
-    );
-    function verb(n) {
-      return function (v) {
-        return step([n, v]);
-      };
-    }
-    function step(op) {
-      if (f) throw new TypeError("Generator is already executing.");
-      while ((g && ((g = 0), op[0] && (_ = 0)), _))
-        try {
-          if (
-            ((f = 1),
-            y &&
-              (t =
-                op[0] & 2
-                  ? y["return"]
-                  : op[0]
-                    ? y["throw"] || ((t = y["return"]) && t.call(y), 0)
-                    : y.next) &&
-              !(t = t.call(y, op[1])).done)
-          )
-            return t;
-          if (((y = 0), t)) op = [op[0] & 2, t.value];
-          switch (op[0]) {
-            case 0:
-            case 1:
-              t = op;
-              break;
-            case 4:
-              _.label++;
-              return { value: op[1], done: false };
-            case 5:
-              _.label++;
-              y = op[1];
-              op = [0];
-              continue;
-            case 7:
-              op = _.ops.pop();
-              _.trys.pop();
-              continue;
-            default:
-              if (
-                !((t = _.trys), (t = t.length > 0 && t[t.length - 1])) &&
-                (op[0] === 6 || op[0] === 2)
-              ) {
-                _ = 0;
-                continue;
-              }
-              if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) {
-                _.label = op[1];
-                break;
-              }
-              if (op[0] === 6 && _.label < t[1]) {
-                _.label = t[1];
-                t = op;
-                break;
-              }
-              if (t && _.label < t[2]) {
-                _.label = t[2];
-                _.ops.push(op);
-                break;
-              }
-              if (t[2]) _.ops.pop();
-              _.trys.pop();
-              continue;
-          }
-          op = body.call(thisArg, _);
-        } catch (e) {
-          op = [6, e];
-          y = 0;
-        } finally {
-          f = t = 0;
-        }
-      if (op[0] & 5) throw op[1];
-      return { value: op[0] ? op[1] : void 0, done: true };
-    }
-  };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ServerActionHandlers = void 0;
 var roomsHandler_1 = require("./roomsHandler");
@@ -144,6 +7,9 @@ var clientActionHandler_1 = require("./clientActionHandler");
 var gamesHandler_1 = require("./gamesHandler");
 var usersHandler_1 = require("./usersHandler");
 var singlePlayHandle_1 = require("./singlePlay/singlePlayHandle");
+var logHandlers_1 = require("./logHandlers");
+var typesOfRequestResponse_1 = require("./types/typesOfRequestResponse");
+var logHandlerTypes_1 = require("./types/logHandlerTypes");
 var ServerActionHandlers = (function () {
   function ServerActionHandlers() {
     var _this = this;
@@ -152,317 +18,293 @@ var ServerActionHandlers = (function () {
     this.gamesHandler = new gamesHandler_1.GamesHandler();
     this.usersHandler = new usersHandler_1.UsersHandler();
     this.singlePlayHandler = new singlePlayHandle_1.SinglePlayHandler();
+    this.consoleLog = new logHandlers_1.ConsoleLog();
     this.handleRegistration = function (command, ws) {
-      return __awaiter(_this, void 0, void 0, function () {
-        var _a, name, password, playerID, rooms, winners;
-        var _this = this;
-        return __generator(this, function (_b) {
-          switch (_b.label) {
-            case 0:
-              (_a = JSON.parse(command.data)),
-                (name = _a.name),
-                (password = _a.password);
-              return [4, this.usersHandler.isPlayerExist(name)];
-            case 1:
-              if (!_b.sent()) return [3, 4];
-              return [4, this.usersHandler.isPasswordCorrect(name, password)];
-            case 2:
-              if (!_b.sent()) {
-                (0, clientActionHandler_1.clientRegistrationError)(
-                  ws,
-                  name,
-                  "wrong password",
-                );
-                return [2];
-              }
-              return [4, this.usersHandler.isUserOnlain(name)];
-            case 3:
-              if (_b.sent()) {
-                (0, clientActionHandler_1.clientRegistrationError)(
-                  ws,
-                  name,
-                  "a user with the same name is already online",
-                );
-                return [2];
-              }
-              return [3, 6];
-            case 4:
-              return [4, this.usersHandler.addPlayer(name, password)];
-            case 5:
-              _b.sent();
-              _b.label = 6;
-            case 6:
-              return [4, this.usersHandler.getPlayerID(name)];
-            case 7:
-              playerID = _b.sent();
-              return [4, this.usersHandler.setOnlineStatus(playerID, true)];
-            case 8:
-              _b.sent();
-              this.webSoketHandler.addWebSoket(ws, playerID);
-              (0, clientActionHandler_1.clientRegistrationSuccest)(
-                ws,
-                name,
-                playerID,
-              );
-              return [4, this.roomsHandler.getRooms()];
-            case 9:
-              rooms = _b.sent();
-              return [4, this.usersHandler.getWinners()];
-            case 10:
-              winners = _b.sent();
-              this.webSoketHandler.getAllWS().forEach(function (ws) {
-                return __awaiter(_this, void 0, void 0, function () {
-                  return __generator(this, function (_a) {
-                    (0, clientActionHandler_1.clientUpdateRoom)(ws.ws, rooms);
-                    (0, clientActionHandler_1.clientUpdateWinners)(
-                      ws.ws,
-                      winners,
-                    );
-                    return [2];
-                  });
-                });
-              });
-              return [2];
-          }
-        });
+      var _a = JSON.parse(command.data),
+        name = _a.name,
+        password = _a.password;
+      _this.consoleLog.clientRequest(
+        typesOfRequestResponse_1.TypesClientRequest.reg,
+        { name: name, password: password },
+      );
+      if (_this.usersHandler.isPlayerExist(name)) {
+        _this.consoleLog.serverAction(
+          logHandlerTypes_1.TypesServerAction.user_in_base,
+          { name: name },
+        );
+        if (!_this.usersHandler.isPasswordCorrect(name, password)) {
+          _this.consoleLog.serverErrorResponse(
+            logHandlerTypes_1.TypesServerResponseError.wrong_password,
+            { name: name, password: password },
+          );
+          (0, clientActionHandler_1.clientRegistrationError)(
+            ws,
+            name,
+            "incorrect password",
+          );
+          return;
+        }
+        if (_this.usersHandler.isUserOnlain(name)) {
+          _this.consoleLog.serverErrorResponse(
+            logHandlerTypes_1.TypesServerResponseError.user_is_onlain,
+            { name: name, password: password },
+          );
+          (0, clientActionHandler_1.clientRegistrationError)(
+            ws,
+            name,
+            "a user with the same name is already online",
+          );
+          return;
+        }
+      } else {
+        _this.consoleLog.serverAction(
+          logHandlerTypes_1.TypesServerAction.add_user,
+          {
+            name: name,
+            password: password,
+          },
+        );
+        _this.usersHandler.addPlayer(name, password);
+      }
+      var playerID = _this.usersHandler.getPlayerID(name);
+      _this.usersHandler.setOnlineStatus(playerID, true);
+      _this.webSoketHandler.addWebSoket(ws, playerID);
+      (0, clientActionHandler_1.clientRegistrationSuccest)(ws, name, playerID);
+      _this.consoleLog.serverResponse(
+        typesOfRequestResponse_1.TypesServerResponse.reg,
+        { name: name, password: password },
+      );
+      var rooms = _this.roomsHandler.getRooms();
+      var winners = _this.usersHandler.getWinners();
+      _this.consoleLog.serverResponse(
+        typesOfRequestResponse_1.TypesServerResponse.update_room,
+        {},
+      );
+      _this.consoleLog.serverResponse(
+        typesOfRequestResponse_1.TypesServerResponse.update_winners,
+        {},
+      );
+      _this.webSoketHandler.getAllWS().forEach(function (ws) {
+        (0, clientActionHandler_1.clientUpdateRoom)(ws.ws, rooms);
+        (0, clientActionHandler_1.clientUpdateWinners)(ws.ws, winners);
       });
     };
     this.handleCreateRoom = function (ws) {
-      return __awaiter(_this, void 0, void 0, function () {
-        var roomId, rooms;
-        var _this = this;
-        return __generator(this, function (_a) {
-          switch (_a.label) {
-            case 0:
-              return [4, this.isUserInRoom(ws)];
-            case 1:
-              if (_a.sent()) return [2];
-              return [4, this.roomsHandler.addRoom()];
-            case 2:
-              roomId = _a.sent();
-              return [4, this.handleAddUserToRoom(roomId, ws)];
-            case 3:
-              _a.sent();
-              return [4, this.roomsHandler.getRooms()];
-            case 4:
-              rooms = _a.sent();
-              console.log("комнаты", rooms);
-              this.webSoketHandler.getAllWS().forEach(function (ws) {
-                return __awaiter(_this, void 0, void 0, function () {
-                  return __generator(this, function (_a) {
-                    (0, clientActionHandler_1.clientUpdateRoom)(ws.ws, rooms);
-                    return [2];
-                  });
-                });
-              });
-              return [2];
-          }
-        });
-      });
+      var userName = _this.usersHandler.getPlayerName(
+        _this.webSoketHandler.getPlayerIDByWS(ws),
+      );
+      _this.consoleLog.clientRequest(
+        typesOfRequestResponse_1.TypesClientRequest.create_room,
+        {
+          name: userName,
+        },
+      );
+      if (_this.isUserInRoom(ws)) {
+        _this.consoleLog.serverAction(
+          logHandlerTypes_1.TypesServerAction.is_user_in_room,
+          {
+            name: userName,
+          },
+        );
+        return;
+      }
+      var roomId = _this.roomsHandler.addRoom();
+      _this.consoleLog.serverAction(
+        logHandlerTypes_1.TypesServerAction.create_room,
+        {
+          name: userName,
+        },
+      );
+      _this.handleAddUserToRoom(roomId, ws, userName);
     };
-    this.handleAddUserToRoom = function (roomId, ws) {
-      return __awaiter(_this, void 0, void 0, function () {
-        var userIndex, _a, player1, player2;
-        var _this = this;
-        return __generator(this, function (_b) {
-          switch (_b.label) {
-            case 0:
-              return [4, this.isUserInRoom(ws)];
-            case 1:
-              if (_b.sent()) return [2];
-              userIndex = this.webSoketHandler.getPlayerIDByWS(ws);
-              return [4, this.roomsHandler.addPlayerToRoom(userIndex, roomId)];
-            case 2:
-              _b.sent();
-              return [4, this.roomsHandler.isRoomFull(roomId)];
-            case 3:
-              if (!_b.sent()) return [3, 7];
-              return [4, this.roomsHandler.getPlayersInRoom(roomId)];
-            case 4:
-              (_a = _b.sent()), (player1 = _a.player1), (player2 = _a.player2);
-              return [4, this.gamesHandler.addGame(player1, player2)];
-            case 5:
-              _b.sent();
-              return [4, this.roomsHandler.delRoom(roomId)];
-            case 6:
-              _b.sent();
-              _b.label = 7;
-            case 7:
-              this.webSoketHandler.getAllWS().forEach(function (ws) {
-                return __awaiter(_this, void 0, void 0, function () {
-                  var _a, _b;
-                  return __generator(this, function (_c) {
-                    switch (_c.label) {
-                      case 0:
-                        _a = clientActionHandler_1.clientUpdateRoom;
-                        _b = [ws.ws];
-                        return [4, this.roomsHandler.getRooms()];
-                      case 1:
-                        _a.apply(void 0, _b.concat([_c.sent()]));
-                        return [2];
-                    }
-                  });
-                });
-              });
-              return [2];
-          }
-        });
+    this.handleAddUserToRoom = function (roomId, ws, name) {
+      var userName = name;
+      if (!userName) {
+        userName = _this.usersHandler.getPlayerName(
+          _this.webSoketHandler.getPlayerIDByWS(ws),
+        );
+        _this.consoleLog.clientRequest(
+          typesOfRequestResponse_1.TypesClientRequest.add_user_to_room,
+          {
+            name: userName,
+          },
+        );
+      }
+      if (_this.isUserInRoom(ws)) {
+        _this.consoleLog.serverAction(
+          logHandlerTypes_1.TypesServerAction.is_user_in_room,
+          {
+            name: userName,
+          },
+        );
+        return;
+      }
+      var userIndex = _this.webSoketHandler.getPlayerIDByWS(ws);
+      _this.consoleLog.serverAction(
+        logHandlerTypes_1.TypesServerAction.add_user_in_room,
+        {
+          name: userName,
+        },
+      );
+      _this.roomsHandler.addPlayerToRoom(userIndex, roomId);
+      if (_this.roomsHandler.isRoomFull(roomId)) {
+        var _a = _this.roomsHandler.getPlayersInRoom(roomId),
+          player1 = _a.player1,
+          player2 = _a.player2;
+        _this.gamesHandler.addGame(player1, player2);
+        _this.consoleLog.serverAction(
+          logHandlerTypes_1.TypesServerAction.del_room,
+          {
+            player1: _this.usersHandler.getPlayerName(player1),
+            player2: _this.usersHandler.getPlayerName(player2),
+          },
+        );
+        _this.roomsHandler.delRoom(roomId);
+      }
+      _this.consoleLog.serverResponse(
+        typesOfRequestResponse_1.TypesServerResponse.update_room,
+        {},
+      );
+      _this.webSoketHandler.getAllWS().forEach(function (ws) {
+        (0, clientActionHandler_1.clientUpdateRoom)(
+          ws.ws,
+          _this.roomsHandler.getRooms(),
+        );
       });
     };
     this.handleAddShips = function (data, ws) {
-      return __awaiter(_this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-          switch (_a.label) {
-            case 0:
-              return [4, this.singlePlayHandler.isSinglePlay(data.gameId)];
-            case 1:
-              if (!_a.sent()) return [3, 4];
-              return [
-                4,
-                this.singlePlayHandler.addShipsToSingleGame(
-                  data.gameId,
-                  data.indexPlayer,
-                  data.ships,
-                ),
-              ];
-            case 2:
-              _a.sent();
-              return [4, this.singlePlayHandler.startSingleGame(data.gameId)];
-            case 3:
-              _a.sent();
-              return [2];
-            case 4:
-              return [
-                4,
-                this.gamesHandler.addShipsToGame(
-                  data.gameId,
-                  data.indexPlayer,
-                  data.ships,
-                ),
-              ];
-            case 5:
-              _a.sent();
-              return [4, this.gamesHandler.isAllPlayerReady(data.gameId)];
-            case 6:
-              if (!_a.sent()) return [3, 8];
-              return [4, this.gamesHandler.startGame(data.gameId)];
-            case 7:
-              _a.sent();
-              _a.label = 8;
-            case 8:
-              return [2];
-          }
-        });
-      });
+      var userName = _this.usersHandler.getPlayerName(
+        _this.webSoketHandler.getPlayerIDByWS(ws),
+      );
+      _this.consoleLog.clientRequest(
+        typesOfRequestResponse_1.TypesClientRequest.add_ships,
+        {
+          name: userName,
+        },
+      );
+      if (_this.singlePlayHandler.isSinglePlay(data.gameId)) {
+        _this.singlePlayHandler.addShipsToSingleGame(
+          data.gameId,
+          data.indexPlayer,
+          data.ships,
+        );
+        _this.singlePlayHandler.startSingleGame(data.gameId);
+        return;
+      }
+      _this.gamesHandler.addShipsToGame(
+        data.gameId,
+        data.indexPlayer,
+        data.ships,
+      );
+      if (_this.gamesHandler.isAllPlayerReady(data.gameId)) {
+        _this.gamesHandler.startGame(data.gameId);
+      }
     };
     this.handleAttack = function (data, ws) {
-      return __awaiter(_this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-          switch (_a.label) {
-            case 0:
-              return [4, this.singlePlayHandler.isSinglePlay(data.gameId)];
-            case 1:
-              if (_a.sent()) {
-                this.singlePlayHandler.singleGameAttackAction(
-                  data.gameId,
-                  data.indexPlayer,
-                  data.x,
-                  data.y,
-                );
-                return [2];
-              }
-              this.gamesHandler.attackAction(
-                data.gameId,
-                data.indexPlayer,
-                data.x,
-                data.y,
-              );
-              return [2];
-          }
-        });
-      });
+      _this.consoleLog.clientRequest(
+        typesOfRequestResponse_1.TypesClientRequest.attack,
+        {
+          attackPlayer: _this.usersHandler.getPlayerName(data.indexPlayer),
+          x: data.x,
+          y: data.y,
+        },
+      );
+      if (_this.singlePlayHandler.isSinglePlay(data.gameId)) {
+        _this.singlePlayHandler.singleGameAttackAction(
+          data.gameId,
+          data.x,
+          data.y,
+        );
+        return;
+      }
+      _this.gamesHandler.attackAction(
+        data.gameId,
+        data.indexPlayer,
+        data.x,
+        data.y,
+      );
     };
     this.handlerandomAttack = function (data, ws) {
-      return __awaiter(_this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-          switch (_a.label) {
-            case 0:
-              return [4, this.singlePlayHandler.isSinglePlay(data.gameId)];
-            case 1:
-              if (_a.sent()) {
-                return [2];
-              }
-              this.gamesHandler.randomAttack(data.gameId, data.indexPlayer);
-              return [2];
-          }
-        });
-      });
+      _this.consoleLog.clientRequest(
+        typesOfRequestResponse_1.TypesClientRequest.randomAttack,
+        {
+          attackPlayer: _this.usersHandler.getPlayerName(data.indexPlayer),
+          x: data.x,
+          y: data.y,
+        },
+      );
+      if (_this.singlePlayHandler.isSinglePlay(data.gameId)) {
+        _this.singlePlayHandler.singleRandomAttack(data.gameId);
+        return;
+      }
+      _this.gamesHandler.randomAttack(data.gameId, data.indexPlayer);
     };
     this.closeWebSoket = function (ws) {
-      return __awaiter(_this, void 0, void 0, function () {
-        var playerID;
-        var _this = this;
-        return __generator(this, function (_a) {
-          switch (_a.label) {
-            case 0:
-              playerID = this.webSoketHandler.getPlayerIDByWS(ws);
-              return [4, this.usersHandler.setOnlineStatus(playerID, false)];
-            case 1:
-              _a.sent();
-              this.webSoketHandler.delWebSoket(ws);
-              this.webSoketHandler.getAllWS().forEach(function (ws) {
-                return __awaiter(_this, void 0, void 0, function () {
-                  var _a, _b, _c, _d;
-                  return __generator(this, function (_e) {
-                    switch (_e.label) {
-                      case 0:
-                        _a = clientActionHandler_1.clientUpdateRoom;
-                        _b = [ws.ws];
-                        return [4, this.roomsHandler.getRooms()];
-                      case 1:
-                        _a.apply(void 0, _b.concat([_e.sent()]));
-                        _c = clientActionHandler_1.clientUpdateWinners;
-                        _d = [ws.ws];
-                        return [4, this.usersHandler.getWinners()];
-                      case 2:
-                        _c.apply(void 0, _d.concat([_e.sent()]));
-                        return [2];
-                    }
-                  });
-                });
-              });
-              return [2];
-          }
-        });
+      if (!_this.webSoketHandler.isPlayerInWS(ws)) {
+        _this.webSoketHandler.delWebSoket(ws);
+        return;
+      }
+      var playerID = _this.webSoketHandler.getPlayerIDByWS(ws);
+      _this.consoleLog.serverAction(
+        logHandlerTypes_1.TypesServerAction.user_disconnect,
+        {
+          name: playerID,
+        },
+      );
+      _this.usersHandler.setOnlineStatus(playerID, false);
+      _this.roomsHandler.playerOffline(playerID);
+      _this.gamesHandler.playerOffline(playerID);
+      _this.singlePlayHandler.playerOffline(playerID);
+      _this.consoleLog.serverResponse(
+        typesOfRequestResponse_1.TypesServerResponse.update_room,
+        {},
+      );
+      _this.consoleLog.serverResponse(
+        typesOfRequestResponse_1.TypesServerResponse.update_winners,
+        {},
+      );
+      _this.webSoketHandler.getAllWS().forEach(function (ws) {
+        (0, clientActionHandler_1.clientUpdateRoom)(
+          ws.ws,
+          _this.roomsHandler.getRooms(),
+        );
+        (0, clientActionHandler_1.clientUpdateWinners)(
+          ws.ws,
+          _this.usersHandler.getWinners(),
+        );
       });
     };
     this.handleSinglePlay = function (ws) {
-      return __awaiter(_this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-          switch (_a.label) {
-            case 0:
-              return [4, this.singlePlayHandler.addSingleGame(ws)];
-            case 1:
-              _a.sent();
-              return [2];
-          }
-        });
+      var name = _this.usersHandler.getPlayerName(
+        _this.webSoketHandler.getPlayerIDByWS(ws),
+      );
+      _this.consoleLog.clientRequest(
+        typesOfRequestResponse_1.TypesClientRequest.single_play,
+        { name: name },
+      );
+      _this.roomsHandler.playerOffline(
+        _this.webSoketHandler.getPlayerIDByWS(ws),
+      );
+      _this.singlePlayHandler.addSingleGame(ws);
+      _this.consoleLog.serverAction(
+        logHandlerTypes_1.TypesServerAction.del_room,
+        { player1: name },
+      );
+      _this.consoleLog.serverResponse(
+        typesOfRequestResponse_1.TypesServerResponse.update_room,
+        {},
+      );
+      _this.webSoketHandler.getAllWS().forEach(function (ws) {
+        (0, clientActionHandler_1.clientUpdateRoom)(
+          ws.ws,
+          _this.roomsHandler.getRooms(),
+        );
       });
     };
   }
   ServerActionHandlers.prototype.isUserInRoom = function (ws) {
-    return __awaiter(this, void 0, void 0, function () {
-      var userIndex;
-      return __generator(this, function (_a) {
-        switch (_a.label) {
-          case 0:
-            userIndex = this.webSoketHandler.getPlayerIDByWS(ws);
-            return [4, this.roomsHandler.isPlayerInRoom(userIndex)];
-          case 1:
-            return [2, _a.sent()];
-        }
-      });
-    });
+    var userIndex = this.webSoketHandler.getPlayerIDByWS(ws);
+    return this.roomsHandler.isPlayerInRoom(userIndex);
   };
   return ServerActionHandlers;
 })();

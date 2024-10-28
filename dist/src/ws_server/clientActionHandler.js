@@ -9,6 +9,8 @@ exports.clientStartGame = clientStartGame;
 exports.clientAttack = clientAttack;
 exports.clientTurn = clientTurn;
 exports.clientFinish = clientFinish;
+var logHandlers_1 = require("./logHandlers");
+var typesOfRequestResponse_1 = require("./types/typesOfRequestResponse");
 function clientRegistrationSuccest(ws, name, index) {
   ws.send(
     JSON.stringify({
@@ -80,7 +82,16 @@ function clientStartGame(ws, ships, currentPlayerIndex) {
   );
 }
 function clientAttack(ws, currentPlayer, status, position) {
-  console.log("отправка на клиент атаки");
+  var consoleLog = new logHandlers_1.ConsoleLog();
+  consoleLog.serverResponse(
+    typesOfRequestResponse_1.TypesServerResponse.attack,
+    {
+      name: currentPlayer,
+      status: status,
+      x: position.x,
+      y: position.y,
+    },
+  );
   ws.send(
     JSON.stringify({
       type: "attack",
@@ -94,6 +105,10 @@ function clientAttack(ws, currentPlayer, status, position) {
   );
 }
 function clientTurn(ws, currentPlayer) {
+  var consoleLog = new logHandlers_1.ConsoleLog();
+  consoleLog.serverResponse(typesOfRequestResponse_1.TypesServerResponse.turn, {
+    name: currentPlayer,
+  });
   ws.send(
     JSON.stringify({
       type: "turn",
@@ -105,6 +120,11 @@ function clientTurn(ws, currentPlayer) {
   );
 }
 function clientFinish(ws, winPlayer) {
+  var consoleLog = new logHandlers_1.ConsoleLog();
+  consoleLog.serverResponse(
+    typesOfRequestResponse_1.TypesServerResponse.finish,
+    { name: winPlayer },
+  );
   ws.send(
     JSON.stringify({
       type: "finish",

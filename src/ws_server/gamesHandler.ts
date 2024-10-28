@@ -66,7 +66,7 @@ export class GamesHandler {
 
     if (!player) {
       throw new Error(
-        `Player with index ${indexPlayer} not found in game ${gameId} gameHandler:185`,
+        `Player with index ${indexPlayer} not found in game ${gameId}`,
       );
     }
 
@@ -79,7 +79,7 @@ export class GamesHandler {
   public isAllPlayerReady = (gameId: string): boolean => {
     const players = this.games.find((game) => game.gameId === gameId)?.players;
     if (!players) {
-      throw new Error();
+      throw new Error("players in game not found");
     }
     return players.every((player) => player.ships.length > 0);
   };
@@ -97,7 +97,7 @@ export class GamesHandler {
       (player) => player !== game.currentPlayer,
     )?.ships;
     if (!result || result.length === 0) {
-      throw new Error();
+      throw new Error("other player with ships not found");
     }
 
     return result;
@@ -128,7 +128,10 @@ export class GamesHandler {
     y: number,
   ) => {
     const game = this.games.find((game) => game.gameId === gameId);
-    if (!game) throw new Error(`game ${gameId} is not found`);
+    if (!game)
+      throw new Error(
+        `game with player ${this.usersHandler.getPlayerName(indexPlayer)} not found`,
+      );
 
     const attackPlayer = this.usersHandler.getPlayerName(
       game.currentPlayer.indexPlayer,
@@ -175,7 +178,7 @@ export class GamesHandler {
 
     if (attackResult.status === "killed") {
       if (!attackResult.ship) {
-        throw new Error("корабль пустой");
+        throw new Error("ship not found");
       }
       this.consoleLog.serverAction(TypesServerAction.killed, {});
       this.missesAroundShip(game, attackResult.ship);
@@ -188,14 +191,14 @@ export class GamesHandler {
         this.deleteGame(game);
       }
     }
-    if (game) {
-      if (attackResult.status === "miss") {
-        game.currentPlayer =
-          game.currentPlayer === game.players[0]
-            ? game.players[1]
-            : game.players[0];
-      }
 
+    if (attackResult.status === "miss") {
+      game.currentPlayer =
+        game.currentPlayer === game.players[0]
+          ? game.players[1]
+          : game.players[0];
+    }
+    if (this.games.includes(game)) {
       clientTurn(game.players[0].ws, game.currentPlayer.indexPlayer);
       clientTurn(game.players[1].ws, game.currentPlayer.indexPlayer);
     }
@@ -217,7 +220,9 @@ export class GamesHandler {
 
     const { x, y } = this.getRandomShot(game.currentPlayer);
     this.consoleLog.serverAction(TypesServerAction.random_attack, {
-      targetPlayer: game.currentPlayer.indexPlayer,
+      targetPlayer: this.usersHandler.getPlayerName(
+        game.currentPlayer.indexPlayer,
+      ),
       x,
       y,
     });

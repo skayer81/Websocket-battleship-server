@@ -34,57 +34,68 @@ export class ServerActionHandlers {
   private consoleLog = new ConsoleLog();
 
   public handleRegistration = (command: any, ws: WebSocket): void => {
-    const { name, password } = JSON.parse(command.data);
+    try {
+      const { name, password } = JSON.parse(command.data);
 
-    this.consoleLog.clientRequest(TypesClientRequest.reg, { name, password });
+      this.consoleLog.clientRequest(TypesClientRequest.reg, { name, password });
 
-    if (this.usersHandler.isPlayerExist(name)) {
-      this.consoleLog.serverAction(TypesServerAction.user_in_base, { name });
-      if (!this.usersHandler.isPasswordCorrect(name, password)) {
-        this.consoleLog.serverErrorResponse(
-          TypesServerResponseError.wrong_password,
-          { name, password },
-        );
-        clientRegistrationError(ws, name, "incorrect password");
-        return;
-      }
-      if (this.usersHandler.isUserOnlain(name)) {
-        this.consoleLog.serverErrorResponse(
-          TypesServerResponseError.user_is_onlain,
-          { name, password },
-        );
-        clientRegistrationError(
-          ws,
+      if (this.usersHandler.isPlayerExist(name)) {
+        this.consoleLog.serverAction(TypesServerAction.user_in_base, { name });
+        if (!this.usersHandler.isPasswordCorrect(name, password)) {
+          this.consoleLog.serverErrorResponse(
+            TypesServerResponseError.wrong_password,
+            { name, password },
+          );
+          clientRegistrationError(ws, name, "incorrect password");
+          return;
+        }
+        if (this.usersHandler.isUserOnlain(name)) {
+          this.consoleLog.serverErrorResponse(
+            TypesServerResponseError.user_is_onlain,
+            { name, password },
+          );
+          clientRegistrationError(
+            ws,
+            name,
+            "a user with the same name is already online",
+          );
+          return;
+        }
+      } else {
+        this.consoleLog.serverAction(TypesServerAction.add_user, {
           name,
-          "a user with the same name is already online",
-        );
-        return;
+          password,
+        });
+        this.usersHandler.addPlayer(name, password);
       }
-    } else {
-      this.consoleLog.serverAction(TypesServerAction.add_user, {
+
+      const playerID = this.usersHandler.getPlayerID(name);
+      this.usersHandler.setOnlineStatus(playerID, true);
+
+      this.webSoketHandler.addWebSoket(ws, playerID);
+      clientRegistrationSuccest(ws, name, playerID);
+      this.consoleLog.serverResponse(TypesServerResponse.reg, {
         name,
         password,
       });
-      this.usersHandler.addPlayer(name, password);
+
+      const rooms = this.roomsHandler.getRooms();
+      const winners = this.usersHandler.getWinners();
+
+      this.consoleLog.serverResponse(TypesServerResponse.update_room, {});
+      this.consoleLog.serverResponse(TypesServerResponse.update_winners, {});
+
+      this.webSoketHandler.getAllWS().forEach((ws) => {
+        clientUpdateRoom(ws.ws, rooms);
+        clientUpdateWinners(ws.ws, winners);
+      });
+    } catch (err) {
+      if (err instanceof Error) {
+        console.log(err.message);
+      } else {
+        console.log("unknow error");
+      }
     }
-
-    const playerID = this.usersHandler.getPlayerID(name);
-    this.usersHandler.setOnlineStatus(playerID, true);
-
-    this.webSoketHandler.addWebSoket(ws, playerID);
-    clientRegistrationSuccest(ws, name, playerID);
-    this.consoleLog.serverResponse(TypesServerResponse.reg, { name, password });
-
-    const rooms = this.roomsHandler.getRooms();
-    const winners = this.usersHandler.getWinners();
-
-    this.consoleLog.serverResponse(TypesServerResponse.update_room, {});
-    this.consoleLog.serverResponse(TypesServerResponse.update_winners, {});
-
-    this.webSoketHandler.getAllWS().forEach((ws) => {
-      clientUpdateRoom(ws.ws, rooms);
-      clientUpdateWinners(ws.ws, winners);
-    });
   };
 
   private isUserInRoom(ws: WebSocket): boolean {
@@ -93,23 +104,31 @@ export class ServerActionHandlers {
   }
 
   public handleCreateRoom = (ws: WebSocket): void => {
-    const userName = this.usersHandler.getPlayerName(
-      this.webSoketHandler.getPlayerIDByWS(ws),
-    );
-    this.consoleLog.clientRequest(TypesClientRequest.create_room, {
-      name: userName,
-    });
-    if (this.isUserInRoom(ws)) {
-      this.consoleLog.serverAction(TypesServerAction.is_user_in_room, {
+    try {
+      const userName = this.usersHandler.getPlayerName(
+        this.webSoketHandler.getPlayerIDByWS(ws),
+      );
+      this.consoleLog.clientRequest(TypesClientRequest.create_room, {
         name: userName,
       });
-      return;
+      if (this.isUserInRoom(ws)) {
+        this.consoleLog.serverAction(TypesServerAction.is_user_in_room, {
+          name: userName,
+        });
+        return;
+      }
+      const roomId = this.roomsHandler.addRoom();
+      this.consoleLog.serverAction(TypesServerAction.create_room, {
+        name: userName,
+      });
+      this.handleAddUserToRoom(roomId, ws, userName);
+    } catch (err) {
+      if (err instanceof Error) {
+        console.log(err.message);
+      } else {
+        console.log("unknow error");
+      }
     }
-    const roomId = this.roomsHandler.addRoom();
-    this.consoleLog.serverAction(TypesServerAction.create_room, {
-      name: userName,
-    });
-    this.handleAddUserToRoom(roomId, ws, userName);
   };
 
   public handleAddUserToRoom = (
@@ -117,135 +136,189 @@ export class ServerActionHandlers {
     ws: WebSocket,
     name?: string,
   ): void => {
-    let userName = name;
-    if (!userName) {
-      userName = this.usersHandler.getPlayerName(
-        this.webSoketHandler.getPlayerIDByWS(ws),
-      );
-      this.consoleLog.clientRequest(TypesClientRequest.add_user_to_room, {
-        name: userName,
-      });
-    }
+    try {
+      let userName = name;
+      if (!userName) {
+        userName = this.usersHandler.getPlayerName(
+          this.webSoketHandler.getPlayerIDByWS(ws),
+        );
+        this.consoleLog.clientRequest(TypesClientRequest.add_user_to_room, {
+          name: userName,
+        });
+      }
 
-    if (this.isUserInRoom(ws)) {
-      this.consoleLog.serverAction(TypesServerAction.is_user_in_room, {
+      if (this.isUserInRoom(ws)) {
+        this.consoleLog.serverAction(TypesServerAction.is_user_in_room, {
+          name: userName,
+        });
+        return;
+      }
+      const userIndex = this.webSoketHandler.getPlayerIDByWS(ws);
+      this.consoleLog.serverAction(TypesServerAction.add_user_in_room, {
         name: userName,
       });
-      return;
-    }
-    const userIndex = this.webSoketHandler.getPlayerIDByWS(ws);
-    this.consoleLog.serverAction(TypesServerAction.add_user_in_room, {
-      name: userName,
-    });
-    this.roomsHandler.addPlayerToRoom(userIndex, roomId);
-    if (this.roomsHandler.isRoomFull(roomId)) {
-      const { player1, player2 } = this.roomsHandler.getPlayersInRoom(roomId);
-      this.gamesHandler.addGame(player1, player2);
-      this.consoleLog.serverAction(TypesServerAction.del_room, {
-        player1: this.usersHandler.getPlayerName(player1),
-        player2: this.usersHandler.getPlayerName(player2),
+      this.roomsHandler.addPlayerToRoom(userIndex, roomId);
+      if (this.roomsHandler.isRoomFull(roomId)) {
+        const { player1, player2 } = this.roomsHandler.getPlayersInRoom(roomId);
+        this.gamesHandler.addGame(player1, player2);
+        this.consoleLog.serverAction(TypesServerAction.del_room, {
+          player1: this.usersHandler.getPlayerName(player1),
+          player2: this.usersHandler.getPlayerName(player2),
+        });
+        this.roomsHandler.delRoom(roomId);
+      }
+      this.consoleLog.serverResponse(TypesServerResponse.update_room, {});
+      this.webSoketHandler.getAllWS().forEach((ws) => {
+        clientUpdateRoom(ws.ws, this.roomsHandler.getRooms());
       });
-      this.roomsHandler.delRoom(roomId);
+    } catch (err) {
+      if (err instanceof Error) {
+        console.log(err.message);
+      } else {
+        console.log("unknow error");
+      }
     }
-    this.consoleLog.serverResponse(TypesServerResponse.update_room, {});
-    this.webSoketHandler.getAllWS().forEach((ws) => {
-      clientUpdateRoom(ws.ws, this.roomsHandler.getRooms());
-    });
   };
 
   public handleAddShips = (data: any, ws: WebSocket): void => {
-    const userName = this.usersHandler.getPlayerName(
-      this.webSoketHandler.getPlayerIDByWS(ws),
-    );
-    this.consoleLog.clientRequest(TypesClientRequest.add_ships, {
-      name: userName,
-    });
-    if (this.singlePlayHandler.isSinglePlay(data.gameId)) {
-      this.singlePlayHandler.addShipsToSingleGame(
+    try {
+      const userName = this.usersHandler.getPlayerName(
+        this.webSoketHandler.getPlayerIDByWS(ws),
+      );
+      this.consoleLog.clientRequest(TypesClientRequest.add_ships, {
+        name: userName,
+      });
+      if (this.singlePlayHandler.isSinglePlay(data.gameId)) {
+        this.singlePlayHandler.addShipsToSingleGame(
+          data.gameId,
+          data.indexPlayer,
+          data.ships,
+        );
+        this.singlePlayHandler.startSingleGame(data.gameId);
+        return;
+      }
+
+      this.gamesHandler.addShipsToGame(
         data.gameId,
         data.indexPlayer,
         data.ships,
       );
-      this.singlePlayHandler.startSingleGame(data.gameId);
-      return;
-    }
 
-    this.gamesHandler.addShipsToGame(data.gameId, data.indexPlayer, data.ships);
-
-    if (this.gamesHandler.isAllPlayerReady(data.gameId)) {
-      this.gamesHandler.startGame(data.gameId);
+      if (this.gamesHandler.isAllPlayerReady(data.gameId)) {
+        this.gamesHandler.startGame(data.gameId);
+      }
+    } catch (err) {
+      if (err instanceof Error) {
+        console.log(err.message);
+      } else {
+        console.log("unknow error");
+      }
     }
   };
 
   public handleAttack = (data: any, ws: WebSocket): void => {
-    this.consoleLog.clientRequest(TypesClientRequest.attack, {
-      attackPlayer: this.usersHandler.getPlayerName(data.indexPlayer),
-      x: data.x,
-      y: data.y,
-    });
+    try {
+      this.consoleLog.clientRequest(TypesClientRequest.attack, {
+        attackPlayer: this.usersHandler.getPlayerName(data.indexPlayer),
+        x: data.x,
+        y: data.y,
+      });
 
-    if (this.singlePlayHandler.isSinglePlay(data.gameId)) {
-      this.singlePlayHandler.singleGameAttackAction(
+      if (this.singlePlayHandler.isSinglePlay(data.gameId)) {
+        this.singlePlayHandler.singleGameAttackAction(
+          data.gameId,
+          data.x,
+          data.y,
+        );
+        return;
+      }
+      this.gamesHandler.attackAction(
         data.gameId,
+        data.indexPlayer,
         data.x,
         data.y,
       );
-      return;
+    } catch (err) {
+      if (err instanceof Error) {
+        console.log(err.message);
+      } else {
+        console.log("unknow error");
+      }
     }
-    this.gamesHandler.attackAction(
-      data.gameId,
-      data.indexPlayer,
-      data.x,
-      data.y,
-    );
   };
 
   public handlerandomAttack = (data: any, ws: WebSocket): void => {
-    this.consoleLog.clientRequest(TypesClientRequest.randomAttack, {
-      attackPlayer: this.usersHandler.getPlayerName(data.indexPlayer),
-      x: data.x,
-      y: data.y,
-    });
-    if (this.singlePlayHandler.isSinglePlay(data.gameId)) {
-      this.singlePlayHandler.singleRandomAttack(data.gameId);
-      return;
+    try {
+      this.consoleLog.clientRequest(TypesClientRequest.randomAttack, {
+        attackPlayer: this.usersHandler.getPlayerName(data.indexPlayer),
+        x: data.x,
+        y: data.y,
+      });
+      if (this.singlePlayHandler.isSinglePlay(data.gameId)) {
+        this.singlePlayHandler.singleRandomAttack(data.gameId);
+        return;
+      }
+      this.gamesHandler.randomAttack(data.gameId, data.indexPlayer);
+    } catch (err) {
+      if (err instanceof Error) {
+        console.log(err.message);
+      } else {
+        console.log("unknow error");
+      }
     }
-    this.gamesHandler.randomAttack(data.gameId, data.indexPlayer);
   };
 
   public closeWebSoket = (ws: WebSocket): void => {
-    if (!this.webSoketHandler.isPlayerInWS(ws)) {
-      this.webSoketHandler.delWebSoket(ws);
-      return;
-    }
+    try {
+      if (!this.webSoketHandler.isPlayerInWS(ws)) {
+        this.webSoketHandler.delWebSoket(ws);
+        return;
+      }
 
-    const playerID = this.webSoketHandler.getPlayerIDByWS(ws);
-    this.consoleLog.serverAction(TypesServerAction.user_disconnect, {
-      name: playerID,
-    });
-    this.usersHandler.setOnlineStatus(playerID, false);
-    this.roomsHandler.playerOffline(playerID);
-    this.gamesHandler.playerOffline(playerID);
-    this.singlePlayHandler.playerOffline(playerID);
-    this.consoleLog.serverResponse(TypesServerResponse.update_room, {});
-    this.consoleLog.serverResponse(TypesServerResponse.update_winners, {});
-    this.webSoketHandler.getAllWS().forEach((ws) => {
-      clientUpdateRoom(ws.ws, this.roomsHandler.getRooms());
-      clientUpdateWinners(ws.ws, this.usersHandler.getWinners());
-    });
+      const playerID = this.webSoketHandler.getPlayerIDByWS(ws);
+      this.consoleLog.serverAction(TypesServerAction.user_disconnect, {
+        name: playerID,
+      });
+      this.usersHandler.setOnlineStatus(playerID, false);
+      this.roomsHandler.playerOffline(playerID);
+      this.gamesHandler.playerOffline(playerID);
+      this.singlePlayHandler.playerOffline(playerID);
+      this.consoleLog.serverResponse(TypesServerResponse.update_room, {});
+      this.consoleLog.serverResponse(TypesServerResponse.update_winners, {});
+      this.webSoketHandler.getAllWS().forEach((ws) => {
+        clientUpdateRoom(ws.ws, this.roomsHandler.getRooms());
+        clientUpdateWinners(ws.ws, this.usersHandler.getWinners());
+      });
+    } catch (err) {
+      if (err instanceof Error) {
+        console.log(err.message);
+      } else {
+        console.log("unknow error");
+      }
+    }
   };
 
   public handleSinglePlay = (ws: WebSocket): void => {
-    const name = this.usersHandler.getPlayerName(
-      this.webSoketHandler.getPlayerIDByWS(ws),
-    );
-    this.consoleLog.clientRequest(TypesClientRequest.single_play, { name });
-    this.roomsHandler.playerOffline(this.webSoketHandler.getPlayerIDByWS(ws));
-    this.singlePlayHandler.addSingleGame(ws);
-    this.consoleLog.serverAction(TypesServerAction.del_room, { player1: name });
-    this.consoleLog.serverResponse(TypesServerResponse.update_room, {});
-    this.webSoketHandler.getAllWS().forEach((ws) => {
-      clientUpdateRoom(ws.ws, this.roomsHandler.getRooms());
-    });
+    try {
+      const name = this.usersHandler.getPlayerName(
+        this.webSoketHandler.getPlayerIDByWS(ws),
+      );
+      this.consoleLog.clientRequest(TypesClientRequest.single_play, { name });
+      this.roomsHandler.playerOffline(this.webSoketHandler.getPlayerIDByWS(ws));
+      this.singlePlayHandler.addSingleGame(ws);
+      this.consoleLog.serverAction(TypesServerAction.del_room, {
+        player1: name,
+      });
+      this.consoleLog.serverResponse(TypesServerResponse.update_room, {});
+      this.webSoketHandler.getAllWS().forEach((ws) => {
+        clientUpdateRoom(ws.ws, this.roomsHandler.getRooms());
+      });
+    } catch (err) {
+      if (err instanceof Error) {
+        console.log(err.message);
+      } else {
+        console.log("unknow error");
+      }
+    }
   };
 }

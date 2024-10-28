@@ -25,23 +25,39 @@ var WebSoketHandler = (function () {
     });
   };
   WebSoketHandler.prototype.getWSByPlayerID = function (playerID) {
-    var ws = this.wsList.find(function (ws) {
-      return ws.playerID === playerID;
+    var ws = this.wsList.find(function (item) {
+      return item.playerID === playerID;
     });
-    if (!ws) throw new Error();
+    if (!ws) {
+      throw new Error();
+    }
     return ws.ws;
   };
   WebSoketHandler.prototype.getPlayerIDByWS = function (ws) {
     var _a;
-    this.wsList.forEach(function (item) {});
     var playerID =
       (_a = this.wsList.find(function (item) {
         return item.ws === ws;
       })) === null || _a === void 0
         ? void 0
         : _a.playerID;
-    if (!playerID) throw new Error();
+    if (!playerID) {
+      throw new Error("playerID in WebSoketHandler is not found");
+    }
     return playerID;
+  };
+  WebSoketHandler.prototype.isPlayerInWS = function (ws) {
+    var _a;
+    var playerID =
+      (_a = this.wsList.find(function (item) {
+        return item.ws === ws;
+      })) === null || _a === void 0
+        ? void 0
+        : _a.playerID;
+    if (!playerID) {
+      return false;
+    }
+    return true;
   };
   WebSoketHandler.prototype.getAllWS = function () {
     return this.wsList;

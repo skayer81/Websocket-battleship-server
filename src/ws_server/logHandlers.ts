@@ -98,7 +98,7 @@ export class ConsoleLog {
   private errorWrongPassword(data: UserData) {
     const { name, password } = data;
     this.outputServerError(
-      `'${TypesServerResponse.reg}': incorrect password, user named '${name}' has password '${password}'`,
+      `'${TypesServerResponse.reg}': incorrect password, user named '${name}' has a password not '${password}'`,
     );
   }
 

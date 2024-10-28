@@ -17,13 +17,11 @@ var __assign =
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SinglPlayShips = void 0;
 var SinglPlayShips = (function () {
-  function SinglPlayShips(fieldSize) {
-    if (fieldSize === void 0) {
-      fieldSize = 10;
-    }
-    this.fieldSize = fieldSize;
-    this.field = Array.from({ length: fieldSize }, function () {
-      return Array(fieldSize).fill(0);
+  function SinglPlayShips() {
+    var _this = this;
+    this.fieldSize = 10;
+    this.field = Array.from({ length: this.fieldSize }, function () {
+      return Array(_this.fieldSize).fill(0);
     });
     this.ships = [];
   }
@@ -32,14 +30,22 @@ var SinglPlayShips = (function () {
       x = _a.x,
       y = _a.y;
     if (!ship.direction) {
-      if (x + ship.length > this.fieldSize) return false;
-      for (var i = 0; i < ship.length; i++) {
-        if (this.field[y][x + i] !== 0) return false;
+      if (x + ship.length > this.fieldSize) {
+        return false;
+      }
+      for (var i = 0; i < ship.length; i += 1) {
+        if (this.field[y][x + i] !== 0) {
+          return false;
+        }
       }
     } else {
-      if (y + ship.length > this.fieldSize) return false;
-      for (var i = 0; i < ship.length; i++) {
-        if (this.field[y + i][x] !== 0) return false;
+      if (y + ship.length > this.fieldSize) {
+        return false;
+      }
+      for (var i = 0; i < ship.length; i += 1) {
+        if (this.field[y + i][x] !== 0) {
+          return false;
+        }
       }
     }
     var directions = [
@@ -52,7 +58,7 @@ var SinglPlayShips = (function () {
       { dx: -1, dy: 1 },
       { dx: 1, dy: 1 },
     ];
-    for (var i = 0; i < ship.length; i++) {
+    for (var i = 0; i < ship.length; i += 1) {
       var checkX = !ship.direction ? x + i : x;
       var checkY = !ship.direction ? y : y + i;
       for (
@@ -66,7 +72,9 @@ var SinglPlayShips = (function () {
         var nx = checkX + dx;
         var ny = checkY + dy;
         if (nx >= 0 && nx < this.fieldSize && ny >= 0 && ny < this.fieldSize) {
-          if (this.field[ny][nx] !== 0) return false;
+          if (this.field[ny][nx] !== 0) {
+            return false;
+          }
         }
       }
     }
@@ -77,11 +85,11 @@ var SinglPlayShips = (function () {
       x = _a.x,
       y = _a.y;
     if (!ship.direction) {
-      for (var i = 0; i < ship.length; i++) {
+      for (var i = 0; i < ship.length; i += 1) {
         this.field[y][x + i] = 1;
       }
     } else {
-      for (var i = 0; i < ship.length; i++) {
+      for (var i = 0; i < ship.length; i += 1) {
         this.field[y + i][x] = 1;
       }
     }
@@ -130,7 +138,7 @@ var SinglPlayShips = (function () {
       _i++
     ) {
       var shipType = shipConfigurations_1[_i];
-      for (var count = 0; count < shipCounts[shipType.type]; count++) {
+      for (var count = 0; count < shipCounts[shipType.type]; count += 1) {
         var placed = false;
         while (!placed) {
           var direction = Math.random() < 0.5;
@@ -158,9 +166,12 @@ var SinglPlayShips = (function () {
     );
   };
   SinglPlayShips.prototype.getShips = function () {
+    var _this = this;
+    this.ships = [];
+    this.field = Array.from({ length: this.fieldSize }, function () {
+      return Array(_this.fieldSize).fill(0);
+    });
     this.randomizeShips();
-    this.printField();
-    console.log(this.ships);
     return this.ships;
   };
   return SinglPlayShips;

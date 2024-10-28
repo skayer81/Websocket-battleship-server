@@ -33,7 +33,7 @@ export class WebSoketHandler {
   public getWSByPlayerID(playerID: string): WebSocket {
     const ws = this.wsList.find((item) => item.playerID === playerID);
     if (!ws) {
-      throw new Error();
+      throw new Error(" WebSoketHandler is not found");
     }
     return ws.ws;
   }
