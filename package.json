@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "start": "npx ts-node-dev ./index.ts",
-    "lint:f": "npx eslint --fix src",
     "lint": "npx eslint src",
     "prettier": "npx prettier --write ."
   },

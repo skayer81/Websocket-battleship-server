@@ -23,7 +23,7 @@ export class UsersHandler {
       return UsersHandler.instance;
     }
     UsersHandler.instance = this;
-   }
+  }
 
   private getPlayerByName = (name: string): Player => {
     const player = this.players.find((player) => player.name === name);
@@ -91,7 +91,7 @@ export class UsersHandler {
   public getWinners = (): Winner[] => {
     const winners: Winner[] = this.sortPlayers(this.players).map((player) => ({
       id: player.index,
-      name: `${player.name} ${player.isOnline ? "(online)" : ""}`, 
+      name: `${player.name} ${player.isOnline ? "(online)" : ""}`,
       wins: player.wins,
     }));
     return winners.sort((a, b) => Number(a.wins > b.wins));

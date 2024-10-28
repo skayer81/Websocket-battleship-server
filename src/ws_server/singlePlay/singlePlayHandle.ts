@@ -9,7 +9,7 @@ import {
   clientUpdateWinners,
 } from "../clientActionHandler";
 
-import { Ship,SingleGame } from "../types/gameTypes";
+import { Ship, SingleGame } from "../types/gameTypes";
 import { GamesHandler } from "../gamesHandler";
 import { SinglPlayShips } from "./singlePlayShips";
 import { TypesServerAction } from "../types/logHandlerTypes";
@@ -54,7 +54,7 @@ export class SinglePlayHandler extends GamesHandler {
     gameId: string,
     indexPlayer: string,
     ships: Ship[],
-  ) : void => {
+  ): void => {
     const player = this.singleGames.find(
       (game) => game.gameId === gameId,
     )?.player;
@@ -92,7 +92,6 @@ export class SinglePlayHandler extends GamesHandler {
     }
   };
 
-
   private botAttackAction(gameId: string): void {
     const game = this.singleGames.find((game) => game.gameId === gameId);
     if (!game) {
@@ -101,17 +100,13 @@ export class SinglePlayHandler extends GamesHandler {
 
     const { x, y } = this.getRandomShot(game?.bot);
 
-    const attackResult = this.getAttackResult(
-      game.player.ships,
-      x,
-      y,
-    );
+    const attackResult = this.getAttackResult(game.player.ships, x, y);
     clientAttack(game.player.ws, game.bot.indexPlayer, attackResult.status, {
       x,
       y,
     });
     game.bot.shots.add(`${x},${y}`);
-   // console.log("бот атакует", attackResult.status);
+    // console.log("бот атакует", attackResult.status);
     if (attackResult.status === "killed") {
       if (!attackResult.ship) {
         throw new Error("корабль пустой");
@@ -135,25 +130,28 @@ export class SinglePlayHandler extends GamesHandler {
 
   public singleGameAttackAction = (
     gameId: string,
-   // indexPlayer: string,
+    // indexPlayer: string,
     x: number,
     y: number,
-  ) : void => {
+  ): void => {
     const game = this.singleGames.find((game) => game.gameId === gameId);
-    if (!game) throw new Error("singleGame is not found")
+    if (!game) throw new Error("singleGame is not found");
     const player = this.usersHandler.getPlayerName(game.player.indexPlayer);
 
     if (!game.isCurrentPlayer) {
-      this.consoleLog.serverAction(TypesServerAction.not_current_player, {player1 : player, player2: 'bot'})
+      this.consoleLog.serverAction(TypesServerAction.not_current_player, {
+        player1: player,
+        player2: "bot",
+      });
 
       return;
     }
     if (game.player.shots.has(`${x},${y}`)) {
-      this.consoleLog.serverAction(TypesServerAction.reshot,       
-        {attackPlayer: 'bot', 
-        targetPlayer : player, 
+      this.consoleLog.serverAction(TypesServerAction.reshot, {
+        attackPlayer: "bot",
+        targetPlayer: player,
         x,
-        y
+        y,
       });
       clientTurn(
         game.player.ws,
@@ -208,30 +206,29 @@ export class SinglePlayHandler extends GamesHandler {
   }
 
   private shipKilled(game: SingleGame, ship: Ship): void {
-    this.consoleLog.serverAction(TypesServerAction.killed, {})
+    this.consoleLog.serverAction(TypesServerAction.killed, {});
     this.missesAroundShipSinglePlay(game, ship);
 
     const otherPlayerShips = game.isCurrentPlayer
       ? game.bot.ships
       : game.player.ships;
     if (this.isAllShipIsKill(otherPlayerShips)) {
-    clientFinish(
-      game.player.ws,
-      game.isCurrentPlayer ? game.player.indexPlayer : game.bot.indexPlayer,
-    );
+      clientFinish(
+        game.player.ws,
+        game.isCurrentPlayer ? game.player.indexPlayer : game.bot.indexPlayer,
+      );
 
-    if (game.isCurrentPlayer) {
-      this.usersHandler.addWinner(game.player.indexPlayer);
-      this.consoleLog.serverResponse(TypesServerResponse.update_winners, {})
-      const winners = this.usersHandler.getWinners();
-      this.webSoketHandler.getAllWS().forEach((ws) => {
-        clientUpdateWinners(ws.ws, winners);
+      if (game.isCurrentPlayer) {
+        this.usersHandler.addWinner(game.player.indexPlayer);
+        this.consoleLog.serverResponse(TypesServerResponse.update_winners, {});
+        const winners = this.usersHandler.getWinners();
+        this.webSoketHandler.getAllWS().forEach((ws) => {
+          clientUpdateWinners(ws.ws, winners);
+        });
+      }
 
-      });
+      this.deleteSingleGame(game);
     }
-
-    this.deleteSingleGame(game);
-     }
   }
 
   private deleteSingleGame(game: SingleGame): void {
@@ -245,7 +242,7 @@ export class SinglePlayHandler extends GamesHandler {
     const position = { x: ship.position.x, y: ship.position.y };
     const currentPlayer = game.isCurrentPlayer ? game.player : game.bot;
 
-    const sendMiss = () : void => {
+    const sendMiss = (): void => {
       clientAttack(game.player.ws, currentPlayer.indexPlayer, "miss", position);
       currentPlayer.shots.add(`${position.x},${position.y}`);
     };
@@ -282,12 +279,18 @@ export class SinglePlayHandler extends GamesHandler {
     // this.setWinAndcloseGame(game)
     this.deleteSingleGame(game);
   }
-  public singleRandomAttack(gameId: string) : void{
-    const game = this.singleGames.find((game) => game.gameId === gameId) as SingleGame;
+  public singleRandomAttack(gameId: string): void {
+    const game = this.singleGames.find(
+      (game) => game.gameId === gameId,
+    ) as SingleGame;
     // const otherPlayer = game.currentPlayer === game.players[0] ? game.players[1] : game.players[0]
 
     const { x, y } = this.getRandomShot(game.player);
-    this.consoleLog.serverAction(TypesServerAction.random_attack, {targetPlayer: game.player.indexPlayer, x , y})
+    this.consoleLog.serverAction(TypesServerAction.random_attack, {
+      targetPlayer: game.player.indexPlayer,
+      x,
+      y,
+    });
     this.singleGameAttackAction(gameId, x, y);
   }
 }

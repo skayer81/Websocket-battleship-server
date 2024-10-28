@@ -11,8 +11,14 @@ import { GamesHandler } from "./gamesHandler";
 import { UsersHandler } from "./usersHandler";
 import { SinglePlayHandler } from "./singlePlay/singlePlayHandle";
 import { ConsoleLog } from "./logHandlers";
-import { TypesClientRequest, TypesServerResponse } from "./types/typesOfRequestResponse";
-import { TypesServerAction, TypesServerResponseError } from "./types/logHandlerTypes";
+import {
+  TypesClientRequest,
+  TypesServerResponse,
+} from "./types/typesOfRequestResponse";
+import {
+  TypesServerAction,
+  TypesServerResponseError,
+} from "./types/logHandlerTypes";
 
 export class ServerActionHandlers {
   private roomsHandler = new RoomsHandler();
@@ -25,22 +31,28 @@ export class ServerActionHandlers {
 
   private singlePlayHandler = new SinglePlayHandler();
 
-  private consoleLog =  new ConsoleLog()
+  private consoleLog = new ConsoleLog();
 
   public handleRegistration = (command: any, ws: WebSocket): void => {
     const { name, password } = JSON.parse(command.data);
 
-    this.consoleLog.clientRequest(TypesClientRequest.reg, {name, password})
+    this.consoleLog.clientRequest(TypesClientRequest.reg, { name, password });
 
     if (this.usersHandler.isPlayerExist(name)) {
-      this.consoleLog.serverAction(TypesServerAction.user_in_base, {name})
+      this.consoleLog.serverAction(TypesServerAction.user_in_base, { name });
       if (!this.usersHandler.isPasswordCorrect(name, password)) {
-        this.consoleLog.serverErrorResponse(TypesServerResponseError.wrong_password, {name, password})
+        this.consoleLog.serverErrorResponse(
+          TypesServerResponseError.wrong_password,
+          { name, password },
+        );
         clientRegistrationError(ws, name, "incorrect password");
         return;
       }
       if (this.usersHandler.isUserOnlain(name)) {
-        this.consoleLog.serverErrorResponse(TypesServerResponseError.user_is_onlain, {name, password})
+        this.consoleLog.serverErrorResponse(
+          TypesServerResponseError.user_is_onlain,
+          { name, password },
+        );
         clientRegistrationError(
           ws,
           name,
@@ -49,7 +61,10 @@ export class ServerActionHandlers {
         return;
       }
     } else {
-      this.consoleLog.serverAction(TypesServerAction.add_user, {name, password})
+      this.consoleLog.serverAction(TypesServerAction.add_user, {
+        name,
+        password,
+      });
       this.usersHandler.addPlayer(name, password);
     }
 
@@ -58,13 +73,13 @@ export class ServerActionHandlers {
 
     this.webSoketHandler.addWebSoket(ws, playerID);
     clientRegistrationSuccest(ws, name, playerID);
-    this.consoleLog.serverResponse(TypesServerResponse.reg, {name, password})
+    this.consoleLog.serverResponse(TypesServerResponse.reg, { name, password });
 
     const rooms = this.roomsHandler.getRooms();
     const winners = this.usersHandler.getWinners();
 
-    this.consoleLog.serverResponse(TypesServerResponse.update_room, {})
-    this.consoleLog.serverResponse(TypesServerResponse.update_winners, {})
+    this.consoleLog.serverResponse(TypesServerResponse.update_room, {});
+    this.consoleLog.serverResponse(TypesServerResponse.update_winners, {});
 
     this.webSoketHandler.getAllWS().forEach((ws) => {
       clientUpdateRoom(ws.ws, rooms);
@@ -78,46 +93,73 @@ export class ServerActionHandlers {
   }
 
   public handleCreateRoom = (ws: WebSocket): void => {
-    const userName = this.usersHandler.getPlayerName(this.webSoketHandler.getPlayerIDByWS(ws))
-    this.consoleLog.clientRequest(TypesClientRequest.create_room, {name: userName})
+    const userName = this.usersHandler.getPlayerName(
+      this.webSoketHandler.getPlayerIDByWS(ws),
+    );
+    this.consoleLog.clientRequest(TypesClientRequest.create_room, {
+      name: userName,
+    });
     if (this.isUserInRoom(ws)) {
-      this.consoleLog.serverAction(TypesServerAction.is_user_in_room, {name: userName})
+      this.consoleLog.serverAction(TypesServerAction.is_user_in_room, {
+        name: userName,
+      });
       return;
     }
     const roomId = this.roomsHandler.addRoom();
-    this.consoleLog.serverAction(TypesServerAction.create_room, {name: userName})
+    this.consoleLog.serverAction(TypesServerAction.create_room, {
+      name: userName,
+    });
     this.handleAddUserToRoom(roomId, ws, userName);
   };
 
-  public handleAddUserToRoom = (roomId: string, ws: WebSocket, name?: string): void => {
-    let userName = name
-    if(!userName){
-      userName = this.usersHandler.getPlayerName(this.webSoketHandler.getPlayerIDByWS(ws));
-      this.consoleLog.clientRequest(TypesClientRequest.add_user_to_room, {name: userName})
+  public handleAddUserToRoom = (
+    roomId: string,
+    ws: WebSocket,
+    name?: string,
+  ): void => {
+    let userName = name;
+    if (!userName) {
+      userName = this.usersHandler.getPlayerName(
+        this.webSoketHandler.getPlayerIDByWS(ws),
+      );
+      this.consoleLog.clientRequest(TypesClientRequest.add_user_to_room, {
+        name: userName,
+      });
     }
 
     if (this.isUserInRoom(ws)) {
-      this.consoleLog.serverAction(TypesServerAction.is_user_in_room, {name: userName})
+      this.consoleLog.serverAction(TypesServerAction.is_user_in_room, {
+        name: userName,
+      });
       return;
     }
     const userIndex = this.webSoketHandler.getPlayerIDByWS(ws);
-    this.consoleLog.serverAction(TypesServerAction.add_user_in_room, {name: userName})
+    this.consoleLog.serverAction(TypesServerAction.add_user_in_room, {
+      name: userName,
+    });
     this.roomsHandler.addPlayerToRoom(userIndex, roomId);
     if (this.roomsHandler.isRoomFull(roomId)) {
       const { player1, player2 } = this.roomsHandler.getPlayersInRoom(roomId);
       this.gamesHandler.addGame(player1, player2);
-      this.consoleLog.serverAction(TypesServerAction.del_room, {player1: this.usersHandler.getPlayerName(player1), player2:  this.usersHandler.getPlayerName(player2)})
+      this.consoleLog.serverAction(TypesServerAction.del_room, {
+        player1: this.usersHandler.getPlayerName(player1),
+        player2: this.usersHandler.getPlayerName(player2),
+      });
       this.roomsHandler.delRoom(roomId);
     }
-    this.consoleLog.serverResponse(TypesServerResponse.update_room, {})
+    this.consoleLog.serverResponse(TypesServerResponse.update_room, {});
     this.webSoketHandler.getAllWS().forEach((ws) => {
       clientUpdateRoom(ws.ws, this.roomsHandler.getRooms());
     });
   };
 
   public handleAddShips = (data: any, ws: WebSocket): void => {
-    const userName = this.usersHandler.getPlayerName(this.webSoketHandler.getPlayerIDByWS(ws))
-    this.consoleLog.clientRequest(TypesClientRequest.add_ships, {name: userName});
+    const userName = this.usersHandler.getPlayerName(
+      this.webSoketHandler.getPlayerIDByWS(ws),
+    );
+    this.consoleLog.clientRequest(TypesClientRequest.add_ships, {
+      name: userName,
+    });
     if (this.singlePlayHandler.isSinglePlay(data.gameId)) {
       this.singlePlayHandler.addShipsToSingleGame(
         data.gameId,
@@ -136,12 +178,11 @@ export class ServerActionHandlers {
   };
 
   public handleAttack = (data: any, ws: WebSocket): void => {
-      this.consoleLog.clientRequest(TypesClientRequest.attack, 
-      {attackPlayer : this.usersHandler.getPlayerName(data.indexPlayer),
-        x: data.x,
-        y: data.y
-      })
-
+    this.consoleLog.clientRequest(TypesClientRequest.attack, {
+      attackPlayer: this.usersHandler.getPlayerName(data.indexPlayer),
+      x: data.x,
+      y: data.y,
+    });
 
     if (this.singlePlayHandler.isSinglePlay(data.gameId)) {
       this.singlePlayHandler.singleGameAttackAction(
@@ -160,11 +201,11 @@ export class ServerActionHandlers {
   };
 
   public handlerandomAttack = (data: any, ws: WebSocket): void => {
-    this.consoleLog.clientRequest(TypesClientRequest.randomAttack, 
-      {attackPlayer : this.usersHandler.getPlayerName(data.indexPlayer),
-        x: data.x,
-        y: data.y
-      })
+    this.consoleLog.clientRequest(TypesClientRequest.randomAttack, {
+      attackPlayer: this.usersHandler.getPlayerName(data.indexPlayer),
+      x: data.x,
+      y: data.y,
+    });
     if (this.singlePlayHandler.isSinglePlay(data.gameId)) {
       this.singlePlayHandler.singleRandomAttack(data.gameId);
       return;
@@ -179,13 +220,15 @@ export class ServerActionHandlers {
     }
 
     const playerID = this.webSoketHandler.getPlayerIDByWS(ws);
-    this.consoleLog.serverAction(TypesServerAction.user_disconnect, {name: playerID})
+    this.consoleLog.serverAction(TypesServerAction.user_disconnect, {
+      name: playerID,
+    });
     this.usersHandler.setOnlineStatus(playerID, false);
     this.roomsHandler.playerOffline(playerID);
     this.gamesHandler.playerOffline(playerID);
     this.singlePlayHandler.playerOffline(playerID);
-    this.consoleLog.serverResponse(TypesServerResponse.update_room, {})
-    this.consoleLog.serverResponse(TypesServerResponse.update_winners, {})
+    this.consoleLog.serverResponse(TypesServerResponse.update_room, {});
+    this.consoleLog.serverResponse(TypesServerResponse.update_winners, {});
     this.webSoketHandler.getAllWS().forEach((ws) => {
       clientUpdateRoom(ws.ws, this.roomsHandler.getRooms());
       clientUpdateWinners(ws.ws, this.usersHandler.getWinners());
@@ -193,12 +236,14 @@ export class ServerActionHandlers {
   };
 
   public handleSinglePlay = (ws: WebSocket): void => {
-    const name = this.usersHandler.getPlayerName(this.webSoketHandler.getPlayerIDByWS(ws))
-    this.consoleLog.clientRequest(TypesClientRequest.single_play, {name})
+    const name = this.usersHandler.getPlayerName(
+      this.webSoketHandler.getPlayerIDByWS(ws),
+    );
+    this.consoleLog.clientRequest(TypesClientRequest.single_play, { name });
     this.roomsHandler.playerOffline(this.webSoketHandler.getPlayerIDByWS(ws));
     this.singlePlayHandler.addSingleGame(ws);
-    this.consoleLog.serverAction(TypesServerAction.del_room, {player1:name});
-    this.consoleLog.serverResponse(TypesServerResponse.update_room, {})
+    this.consoleLog.serverAction(TypesServerAction.del_room, { player1: name });
+    this.consoleLog.serverResponse(TypesServerResponse.update_room, {});
     this.webSoketHandler.getAllWS().forEach((ws) => {
       clientUpdateRoom(ws.ws, this.roomsHandler.getRooms());
     });

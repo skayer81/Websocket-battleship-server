@@ -11,7 +11,6 @@ interface Ship {
   shots: boolean[];
 }
 
-
 export class SinglPlayShips {
   private field: number[][];
 

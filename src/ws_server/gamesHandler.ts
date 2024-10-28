@@ -1,4 +1,4 @@
-import { WebSoketHandler } from "./webSoketHandler"; 
+import { WebSoketHandler } from "./webSoketHandler";
 import {
   clientCreateGame,
   clientStartGame,
@@ -12,19 +12,20 @@ import { RoomsHandler } from "./roomsHandler";
 import { Ship, Player, Game, AttackResult } from "./types/gameTypes";
 import { UsersHandler } from "./usersHandler";
 import { ConsoleLog } from "./logHandlers";
-import { TypesClientRequest, TypesServerResponse } from "./types/typesOfRequestResponse";
+import {
+  TypesClientRequest,
+  TypesServerResponse,
+} from "./types/typesOfRequestResponse";
 import { TypesServerAction } from "./types/logHandlerTypes";
 
 export class GamesHandler {
-
   protected webSoketHandler = new WebSoketHandler();
 
   protected usersHandler = new UsersHandler();
 
-  protected consoleLog = new ConsoleLog()
+  protected consoleLog = new ConsoleLog();
 
   private games: Game[] = [];
-
 
   private createPlayer(playerID: string): Player {
     return {
@@ -48,8 +49,9 @@ export class GamesHandler {
 
     game.players.forEach((player) => {
       clientCreateGame(player.ws, game.gameId, player.indexPlayer);
-      this.consoleLog.serverResponse(TypesServerResponse.create_game, {name: this.usersHandler.getPlayerName(player.indexPlayer)})
-
+      this.consoleLog.serverResponse(TypesServerResponse.create_game, {
+        name: this.usersHandler.getPlayerName(player.indexPlayer),
+      });
     });
   };
 
@@ -76,7 +78,9 @@ export class GamesHandler {
 
   public isAllPlayerReady = (gameId: string): boolean => {
     const players = this.games.find((game) => game.gameId === gameId)?.players;
-    if (!players) { throw new Error(); }
+    if (!players) {
+      throw new Error();
+    }
     return players.every((player) => player.ships.length > 0);
   };
 
@@ -89,7 +93,6 @@ export class GamesHandler {
   };
 
   private getShipsOtherPlayer(game: Game): Ship[] {
-
     const result = game.players.find(
       (player) => player !== game.currentPlayer,
     )?.ships;
@@ -110,12 +113,12 @@ export class GamesHandler {
     let shot: { x: number; y: number };
     do {
       shot = {
-        x: Math.floor(Math.random() * 10), 
-        y: Math.floor(Math.random() * 10), 
+        x: Math.floor(Math.random() * 10),
+        y: Math.floor(Math.random() * 10),
       };
-    } while (player.shots.has(`${shot.x},${shot.y}`)); 
+    } while (player.shots.has(`${shot.x},${shot.y}`));
 
-    return shot; 
+    return shot;
   }
 
   public attackAction = (
@@ -127,21 +130,30 @@ export class GamesHandler {
     const game = this.games.find((game) => game.gameId === gameId);
     if (!game) throw new Error(`game ${gameId} is not found`);
 
-    const attackPlayer = this.usersHandler.getPlayerName(game.currentPlayer.indexPlayer);
-    const targetPlayer = this.usersHandler.getPlayerName(game.currentPlayer === game.players[0] ? game.players[1].indexPlayer : game.players[0].indexPlayer );
+    const attackPlayer = this.usersHandler.getPlayerName(
+      game.currentPlayer.indexPlayer,
+    );
+    const targetPlayer = this.usersHandler.getPlayerName(
+      game.currentPlayer === game.players[0]
+        ? game.players[1].indexPlayer
+        : game.players[0].indexPlayer,
+    );
 
     if (!(game.currentPlayer.indexPlayer === indexPlayer)) {
-      this.consoleLog.serverAction(TypesServerAction.not_current_player, {player1 : attackPlayer, player2: targetPlayer}) 
+      this.consoleLog.serverAction(TypesServerAction.not_current_player, {
+        player1: attackPlayer,
+        player2: targetPlayer,
+      });
       return;
     }
     if (game.currentPlayer.shots.has(`${x},${y}`)) {
-        this.consoleLog.serverAction(TypesServerAction.reshot,       
-          {attackPlayer, 
-          targetPlayer, 
-          x,
-          y
-        });
-        clientTurn(game.currentPlayer.ws, game.currentPlayer.indexPlayer);
+      this.consoleLog.serverAction(TypesServerAction.reshot, {
+        attackPlayer,
+        targetPlayer,
+        x,
+        y,
+      });
+      clientTurn(game.currentPlayer.ws, game.currentPlayer.indexPlayer);
       return;
     }
     game.currentPlayer.shots.add(`${x},${y}`);
@@ -165,7 +177,7 @@ export class GamesHandler {
       if (!attackResult.ship) {
         throw new Error("корабль пустой");
       }
-      this.consoleLog.serverAction(TypesServerAction.killed, {})
+      this.consoleLog.serverAction(TypesServerAction.killed, {});
       this.missesAroundShip(game, attackResult.ship);
       if (this.isAllShipKill(game)) {
         clientFinish(game.players[0].ws, game.currentPlayer.indexPlayer);
@@ -173,27 +185,27 @@ export class GamesHandler {
 
         this.setWinAndcloseGame(game);
 
-         this.deleteGame(game);
+        this.deleteGame(game);
       }
     }
-  if(game){  
-    if (attackResult.status === "miss") {
-      game.currentPlayer =
-        game.currentPlayer === game.players[0]
-          ? game.players[1]
-          : game.players[0];
-    }
+    if (game) {
+      if (attackResult.status === "miss") {
+        game.currentPlayer =
+          game.currentPlayer === game.players[0]
+            ? game.players[1]
+            : game.players[0];
+      }
 
-    clientTurn(game.players[0].ws, game.currentPlayer.indexPlayer);
-    clientTurn(game.players[1].ws, game.currentPlayer.indexPlayer);
-  }
+      clientTurn(game.players[0].ws, game.currentPlayer.indexPlayer);
+      clientTurn(game.players[1].ws, game.currentPlayer.indexPlayer);
+    }
   };
 
   protected setWinAndcloseGame(game: Game) {
     this.usersHandler.addWinner(game.currentPlayer.indexPlayer);
 
     const winners = this.usersHandler.getWinners();
-    this.consoleLog.serverResponse(TypesServerResponse.update_winners, {})
+    this.consoleLog.serverResponse(TypesServerResponse.update_winners, {});
     this.webSoketHandler.getAllWS().forEach((ws) => {
       clientUpdateWinners(ws.ws, winners);
     });
@@ -202,10 +214,13 @@ export class GamesHandler {
 
   public randomAttack = (gameId: string, playerIndex: string) => {
     const game = this.games.find((game) => game.gameId === gameId) as Game;
-    
-    
+
     const { x, y } = this.getRandomShot(game.currentPlayer);
-    this.consoleLog.serverAction(TypesServerAction.random_attack, {targetPlayer: game.currentPlayer.indexPlayer, x , y})
+    this.consoleLog.serverAction(TypesServerAction.random_attack, {
+      targetPlayer: game.currentPlayer.indexPlayer,
+      x,
+      y,
+    });
     this.attackAction(gameId, playerIndex, x, y);
   };
 
@@ -238,9 +253,9 @@ export class GamesHandler {
     ) {
       position[lengthCoordinate] = i;
       position[widthCoordinate] = ship.position[widthCoordinate] - 1;
-      sendMiss(); 
+      sendMiss();
       position[widthCoordinate] = ship.position[widthCoordinate] + 1;
-      sendMiss(); 
+      sendMiss();
     }
 
     position[lengthCoordinate] = ship.position[lengthCoordinate] - 1;
@@ -248,9 +263,8 @@ export class GamesHandler {
     sendMiss();
     position[lengthCoordinate] = ship.position[lengthCoordinate] + ship.length;
     sendMiss();
-    }
+  }
 
-  
   public getAttackResult = (
     ships: Ship[],
     x: number,
@@ -272,7 +286,7 @@ export class GamesHandler {
           result.ship = ship;
         }
 
-        break; 
+        break;
       }
     }
 
@@ -281,7 +295,6 @@ export class GamesHandler {
 
   private checkHit(ship: Ship, x: number, y: number): { index: number } | null {
     if (!ship.direction) {
-
       if (
         x >= ship.position.x &&
         x < ship.position.x + ship.length &&
@@ -290,7 +303,6 @@ export class GamesHandler {
         return { index: x - ship.position.x };
       }
     } else {
-
       if (
         y >= ship.position.y &&
         y < ship.position.y + ship.length &&
@@ -299,7 +311,7 @@ export class GamesHandler {
         return { index: y - ship.position.y };
       }
     }
-    return null; 
+    return null;
   }
 
   private deleteGame(game: Game): void {
@@ -322,6 +334,4 @@ export class GamesHandler {
     clientFinish(otherPlayer.ws, otherPlayer.indexPlayer);
     this.setWinAndcloseGame(game);
   }
-
- 
 }

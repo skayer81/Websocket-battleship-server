@@ -5,10 +5,10 @@ export enum TypesClientRequest {
   add_ships = "add_ships",
   attack = "attack",
   randomAttack = "randomAttack",
-  single_play ="single_play",
+  single_play = "single_play",
 }
 
-export enum  TypesServerResponse{
+export enum TypesServerResponse {
   reg = "reg",
   update_winners = "update_winners",
   create_game = "create_game",
@@ -18,7 +18,6 @@ export enum  TypesServerResponse{
   turn = "turn",
   finish = "finish",
 }
-
 
 // Player
 // Login or create player

@@ -7,7 +7,7 @@ export function clientRegistrationSuccest(
   ws: WebSocket,
   name: string,
   index: string,
-) : void {
+): void {
   ws.send(
     JSON.stringify({
       type: "reg",
@@ -26,7 +26,7 @@ export function clientRegistrationError(
   ws: WebSocket,
   name: string,
   errorText: string,
-) : void{
+): void {
   ws.send(
     JSON.stringify({
       type: "reg",
@@ -41,7 +41,7 @@ export function clientRegistrationError(
   );
 }
 
-export function clientUpdateRoom(ws: WebSocket, rooms: Room[]) : void {
+export function clientUpdateRoom(ws: WebSocket, rooms: Room[]): void {
   ws.send(
     JSON.stringify({
       type: "update_room",
@@ -51,7 +51,7 @@ export function clientUpdateRoom(ws: WebSocket, rooms: Room[]) : void {
   );
 }
 
-export function clientUpdateWinners(ws: WebSocket, winners: Winner[]) : void {
+export function clientUpdateWinners(ws: WebSocket, winners: Winner[]): void {
   ws.send(
     JSON.stringify({
       type: "update_winners",
@@ -65,7 +65,7 @@ export function clientCreateGame(
   ws: WebSocket,
   idGame: string,
   idPlayer: string,
-) : void {
+): void {
   ws.send(
     JSON.stringify({
       type: "create_game",
@@ -82,7 +82,7 @@ export function clientStartGame(
   ws: WebSocket,
   ships: Ship[],
   currentPlayerIndex: string,
-) : void {
+): void {
   ws.send(
     JSON.stringify({
       type: "start_game",
@@ -100,11 +100,16 @@ export function clientAttack(
   currentPlayer: string,
   status: string,
   position: { x: number; y: number },
-) : void {
- // console.log("отправка на клиент атаки");
-  
- const consoleLog = new ConsoleLog();
- consoleLog.serverResponse(TypesServerResponse.attack, {name: currentPlayer, status, x: position.x, y: position.y}) 
+): void {
+  // console.log("отправка на клиент атаки");
+
+  const consoleLog = new ConsoleLog();
+  consoleLog.serverResponse(TypesServerResponse.attack, {
+    name: currentPlayer,
+    status,
+    x: position.x,
+    y: position.y,
+  });
 
   ws.send(
     JSON.stringify({
@@ -119,9 +124,9 @@ export function clientAttack(
   );
 }
 
-export function clientTurn(ws: WebSocket, currentPlayer: string) : void {
+export function clientTurn(ws: WebSocket, currentPlayer: string): void {
   const consoleLog = new ConsoleLog();
-  consoleLog.serverResponse(TypesServerResponse.turn, {name: currentPlayer})
+  consoleLog.serverResponse(TypesServerResponse.turn, { name: currentPlayer });
   ws.send(
     JSON.stringify({
       type: "turn",
@@ -133,9 +138,9 @@ export function clientTurn(ws: WebSocket, currentPlayer: string) : void {
   );
 }
 
-export function clientFinish(ws: WebSocket, winPlayer: string) : void {
+export function clientFinish(ws: WebSocket, winPlayer: string): void {
   const consoleLog = new ConsoleLog();
-  consoleLog.serverResponse(TypesServerResponse.finish, {name: winPlayer})
+  consoleLog.serverResponse(TypesServerResponse.finish, { name: winPlayer });
   ws.send(
     JSON.stringify({
       type: "finish",
